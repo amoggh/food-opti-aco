@@ -41,11 +41,30 @@ export default function App() {
         api.getOptimizationMetrics()
       ]);
 
-      if (restRes.status === 'fulfilled') setRestaurants(restRes.value.restaurants || []);
-      if (custRes.status === 'fulfilled') setCustomers(custRes.value.customers || []);
-      if (graphRes.status === 'fulfilled') setRoadGraph(graphRes.value.graph || null);
-      if (stateRes.status === 'fulfilled') setSimState(stateRes.value);
-      if (metricsRes.status === 'fulfilled') setBestPlan(metricsRes.value.best_plan || null);
+      if (restRes.status === 'fulfilled') {
+        const val = restRes.value;
+        setRestaurants(Array.isArray(val) ? val : (val?.restaurants || []));
+      }
+      if (custRes.status === 'fulfilled') {
+        const val = custRes.value;
+        setCustomers(Array.isArray(val) ? val : (val?.customers || []));
+      }
+      if (graphRes.status === 'fulfilled') {
+        const val = graphRes.value;
+        setRoadGraph(val?.graph || val || null);
+      }
+      if (stateRes.status === 'fulfilled') {
+        const val = stateRes.value;
+        const state = val?.state || val?.snapshot || val;
+        setSimState(state);
+        if (state?.is_running !== undefined) {
+          setIsRunning(state.is_running);
+        }
+      }
+      if (metricsRes.status === 'fulfilled') {
+        const val = metricsRes.value;
+        setBestPlan(val?.active_plan || val?.best_plan || val?.plan || null);
+      }
     } catch (err) {
       console.warn('Initial data load warning:', err);
     }
@@ -58,9 +77,12 @@ export default function App() {
     simWebSocket.connect();
     const unsubStatus = simWebSocket.onStatusChange(setWsConnected);
     const unsubMsg = simWebSocket.onMessage((msg) => {
-      if (msg?.type === 'SIM_STATE_UPDATE' && msg.state) {
-        setSimState(msg.state);
-        setIsRunning(msg.state.is_running);
+      const state = msg?.state || msg?.snapshot || (msg?.sim_time_min !== undefined ? msg : null);
+      if (state) {
+        setSimState(state);
+        if (state.is_running !== undefined) {
+          setIsRunning(state.is_running);
+        }
       }
     });
 
@@ -78,8 +100,9 @@ export default function App() {
       playbackIntervalRef.current = setInterval(async () => {
         try {
           const res = await api.stepSimulation(1.0);
-          if (res?.state) {
-            setSimState(res.state);
+          const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+          if (state) {
+            setSimState(state);
           }
         } catch (err) {
           console.warn('Simulation step tick failed:', err);
@@ -102,8 +125,17 @@ export default function App() {
   // Simulation Controls Handlers
   const handleStart = async () => {
     try {
-      await api.startSimulation(speedMultiplier, 1.0);
+      const res = await api.startSimulation(speedMultiplier, 1.0);
       setIsRunning(true);
+      const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+      if (state) {
+        setSimState(state);
+      }
+      api.getOptimizationMetrics().then(metrics => {
+        if (metrics?.active_plan) {
+          setBestPlan(metrics.active_plan);
+        }
+      }).catch(() => {});
     } catch (err) {
       console.error('Failed to start simulation:', err);
       // fallback to client-side ticking
@@ -113,8 +145,12 @@ export default function App() {
 
   const handlePause = async () => {
     try {
-      await api.pauseSimulation();
+      const res = await api.pauseSimulation();
       setIsRunning(false);
+      const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+      if (state) {
+        setSimState(state);
+      }
     } catch (err) {
       console.error('Failed to pause simulation:', err);
       setIsRunning(false);
@@ -124,8 +160,9 @@ export default function App() {
   const handleStep = async (dt = 1.0) => {
     try {
       const res = await api.stepSimulation(dt);
-      if (res?.state) {
-        setSimState(res.state);
+      const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+      if (state) {
+        setSimState(state);
       }
     } catch (err) {
       console.error('Failed to step simulation:', err);
@@ -136,12 +173,16 @@ export default function App() {
     try {
       const res = await api.resetSimulation();
       setIsRunning(false);
-      if (res?.state) {
-        setSimState(res.state);
+      const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+      if (state) {
+        setSimState(state);
       } else {
         const fresh = await api.getSimState();
-        setSimState(fresh);
+        setSimState(fresh?.state || fresh);
       }
+      api.getOptimizationMetrics().then(metrics => {
+        setBestPlan(metrics?.active_plan || null);
+      }).catch(() => {});
     } catch (err) {
       console.error('Failed to reset simulation:', err);
     }
@@ -149,9 +190,13 @@ export default function App() {
 
   const handleOptimizationComplete = (result) => {
     if (result) {
-      setBestPlan(result);
+      const plan = result.plan || result.best_plan || result;
+      setBestPlan(plan);
       // refresh simulation state to reflect reassigned routes
-      api.getSimState().then(setSimState).catch(console.warn);
+      api.getSimState().then(res => {
+        const state = res?.state || res?.snapshot || res;
+        setSimState(state);
+      }).catch(console.warn);
     }
   };
 

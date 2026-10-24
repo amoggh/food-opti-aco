@@ -42,12 +42,38 @@ export default function DeliveryMap({
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // CartoDB Dark Matter tile layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    // Tile layers (Free OpenStreetMap by default - No API key required)
+    const cartoKey = import.meta.env.VITE_CARTO_API_KEY;
+
+    const osmDark = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
-      subdomains: 'abcd'
-    }).addTo(map);
+      className: 'dark-tiles'
+    });
+
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    });
+
+    const baseMaps = {
+      'Dark Map (Free)': osmDark,
+      'Standard OSM': osmStandard
+    };
+
+    if (cartoKey) {
+      baseMaps['CARTO Dark'] = L.tileLayer(
+        `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`,
+        {
+          attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+          subdomains: 'abcd'
+        }
+      );
+    }
+
+    osmDark.addTo(map);
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
     // Initialize layer groups
     layersRef.current.roadNetwork = L.layerGroup().addTo(map);
@@ -73,54 +99,70 @@ export default function DeliveryMap({
 
     // Map node coordinates
     const nodeLookup = {};
-    if (roadGraph.nodes) {
+    if (roadGraph.nodes && Array.isArray(roadGraph.nodes)) {
       roadGraph.nodes.forEach(n => {
-        nodeLookup[n.id] = [n.latitude, n.longitude];
+        const id = n.node_id || n.id;
+        const lat = typeof n.lat === 'number' ? n.lat : (typeof n.latitude === 'number' ? n.latitude : parseFloat(n.lat || n.latitude));
+        const lon = typeof n.lon === 'number' ? n.lon : (typeof n.longitude === 'number' ? n.longitude : parseFloat(n.lon || n.longitude));
+        if (id && !isNaN(lat) && !isNaN(lon)) {
+          nodeLookup[id] = [lat, lon];
+        }
       });
     }
 
-    roadGraph.edges.forEach(edge => {
-      const uCoords = nodeLookup[edge.source];
-      const vCoords = nodeLookup[edge.target];
-      if (!uCoords || !vCoords) return;
+    if (roadGraph.edges && Array.isArray(roadGraph.edges)) {
+      roadGraph.edges.forEach(edge => {
+        const u = edge.u || edge.source;
+        const v = edge.v || edge.target;
+        const uCoords = nodeLookup[u];
+        const vCoords = nodeLookup[v];
+        if (!uCoords || !vCoords) return;
+        if (typeof uCoords[0] !== 'number' || typeof uCoords[1] !== 'number' || typeof vCoords[0] !== 'number' || typeof vCoords[1] !== 'number') return;
 
-      const isClosed = edge.is_closed || false;
-      const traffic = edge.traffic_multiplier || 1.0;
+        const isClosed = edge.is_closed || false;
+        const trafficLevel = edge.traffic_level || 'LOW';
+        const traffic = edge.traffic_multiplier || (trafficLevel === 'SEVERE' ? 2.5 : trafficLevel === 'HIGH' ? 1.8 : trafficLevel === 'MEDIUM' ? 1.3 : 1.0);
 
-      let color = 'rgba(56, 189, 248, 0.22)';
-      let weight = 1.5;
-      let dashArray = null;
+        let color = 'rgba(56, 189, 248, 0.22)';
+        let weight = 1.5;
+        let dashArray = null;
 
-      if (isClosed) {
-        color = '#ef4444';
-        weight = 2.5;
-        dashArray = '5, 5';
-      } else if (traffic > 1.8) {
-        color = '#f97316';
-        weight = 2.5;
-      } else if (traffic > 1.2) {
-        color = '#eab308';
-        weight = 2.0;
-      }
+        if (isClosed || trafficLevel === 'SEVERE') {
+          color = '#ef4444';
+          weight = 2.5;
+          dashArray = '5, 5';
+        } else if (traffic > 1.6) {
+          color = '#f97316';
+          weight = 2.5;
+        } else if (traffic > 1.2) {
+          color = '#eab308';
+          weight = 2.0;
+        }
 
-      const poly = L.polyline([uCoords, vCoords], {
-        color,
-        weight,
-        dashArray,
-        opacity: isClosed ? 0.9 : 0.6
+        try {
+          const poly = L.polyline([uCoords, vCoords], {
+            color,
+            weight,
+            dashArray,
+            opacity: isClosed ? 0.9 : 0.6
+          });
+
+          const dist = edge.distance_km ?? edge.length_km ?? 0;
+          poly.bindPopup(`
+            <div style="font-size: 11px;">
+              <strong>Road Segment</strong>: ${u} &rarr; ${v}<br/>
+              <strong>Length</strong>: ${dist ? dist.toFixed(2) : '--'} km<br/>
+              <strong>Traffic</strong>: ${trafficLevel} (${traffic.toFixed(2)}x)<br/>
+              <strong>Status</strong>: ${isClosed ? '<span style="color:#f43f5e">BLOCKED</span>' : 'OPEN'}
+            </div>
+          `);
+
+          poly.addTo(layer);
+        } catch (e) {
+          // ignore polyline render error
+        }
       });
-
-      poly.bindPopup(`
-        <div style="font-size: 11px;">
-          <strong>Road Segment</strong>: ${edge.source} &rarr; ${edge.target}<br/>
-          <strong>Length</strong>: ${edge.length_km?.toFixed(2)} km<br/>
-          <strong>Traffic Multiplier</strong>: ${traffic.toFixed(2)}x<br/>
-          <strong>Status</strong>: ${isClosed ? '<span style="color:#f43f5e">BLOCKED</span>' : 'OPEN'}
-        </div>
-      `);
-
-      poly.addTo(layer);
-    });
+    }
   }, [roadGraph]);
 
   // 3. Render Static Entities (Restaurants & Customers)
@@ -132,6 +174,10 @@ export default function DeliveryMap({
     restLayer.clearLayers();
 
     restaurants.forEach(r => {
+      const lat = typeof r.latitude === 'number' ? r.latitude : (typeof r.lat === 'number' ? r.lat : parseFloat(r.latitude || r.lat));
+      const lon = typeof r.longitude === 'number' ? r.longitude : (typeof r.lon === 'number' ? r.lon : parseFloat(r.longitude || r.lon));
+      if (isNaN(lat) || isNaN(lon)) return;
+
       const icon = L.divIcon({
         className: 'custom-rest-marker',
         html: `
@@ -153,13 +199,13 @@ export default function DeliveryMap({
         iconAnchor: [11, 11]
       });
 
-      const marker = L.marker([r.latitude, r.longitude], { icon });
+      const marker = L.marker([lat, lon], { icon });
       marker.bindPopup(`
         <div style="font-size: 12px; line-height: 1.4;">
           <strong style="color: #f59e0b;">${r.name || r.restaurant_id}</strong><br/>
           <span style="color: #94a3b8;">ID: ${r.restaurant_id}</span><br/>
-          Avg Prep Time: <strong>${r.average_preparation_time_min || 15} min</strong><br/>
-          Coord: ${r.latitude.toFixed(4)}, ${r.longitude.toFixed(4)}
+          Avg Prep Time: <strong>${r.average_preparation_time_min || r.preparation_time || 15} min</strong><br/>
+          Coord: ${lat.toFixed(4)}, ${lon.toFixed(4)}
         </div>
       `);
       marker.addTo(restLayer);
@@ -170,6 +216,10 @@ export default function DeliveryMap({
     custLayer.clearLayers();
 
     customers.forEach(c => {
+      const lat = typeof c.latitude === 'number' ? c.latitude : (typeof c.lat === 'number' ? c.lat : parseFloat(c.latitude || c.lat));
+      const lon = typeof c.longitude === 'number' ? c.longitude : (typeof c.lon === 'number' ? c.lon : parseFloat(c.longitude || c.lon));
+      if (isNaN(lat) || isNaN(lon)) return;
+
       const icon = L.divIcon({
         className: 'custom-cust-marker',
         html: `
@@ -187,12 +237,12 @@ export default function DeliveryMap({
         iconAnchor: [7, 7]
       });
 
-      const marker = L.marker([c.latitude, c.longitude], { icon });
+      const marker = L.marker([lat, lon], { icon });
       marker.bindPopup(`
         <div style="font-size: 12px; line-height: 1.4;">
           <strong style="color: #38bdf8;">${c.name || c.customer_id}</strong><br/>
           <span style="color: #94a3b8;">Customer ID: ${c.customer_id}</span><br/>
-          Coord: ${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}
+          Coord: ${lat.toFixed(4)}, ${lon.toFixed(4)}
         </div>
       `);
       marker.addTo(custLayer);
@@ -210,7 +260,11 @@ export default function DeliveryMap({
 
     // Map rider routes from bestPlan or live riders
     const riderRoutesMap = {};
-    if (bestPlan?.routes) {
+    if (bestPlan?.tours) {
+      Object.entries(bestPlan.tours).forEach(([rId, tour]) => {
+        riderRoutesMap[rId] = tour.stops || [];
+      });
+    } else if (bestPlan?.routes) {
       bestPlan.routes.forEach(rt => {
         riderRoutesMap[rt.rider_id] = rt.stops || [];
       });
@@ -220,24 +274,37 @@ export default function DeliveryMap({
       const color = RIDER_COLORS[idx % RIDER_COLORS.length];
       const isSelected = selectedRiderId === rider.rider_id;
 
+      const rLat = typeof rider.current_lat === 'number' ? rider.current_lat : parseFloat(rider.current_lat);
+      const rLon = typeof rider.current_lon === 'number' ? rider.current_lon : parseFloat(rider.current_lon);
+      if (isNaN(rLat) || isNaN(rLon)) return;
+
       // Draw Planned Route Polylines
-      const stops = rider.route || riderRoutesMap[rider.rider_id] || [];
+      const stops = (rider.assigned_stops && rider.assigned_stops.length > 0)
+        ? rider.assigned_stops
+        : (rider.route || riderRoutesMap[rider.rider_id] || []);
+
       if (stops.length > 0) {
-        const latlngs = [[rider.current_lat, rider.current_lon]];
+        const latlngs = [[rLat, rLon]];
         stops.forEach(s => {
-          if (s.lat && s.lon) {
-            latlngs.push([s.lat, s.lon]);
+          const sLat = typeof s.lat === 'number' ? s.lat : (typeof s.latitude === 'number' ? s.latitude : parseFloat(s.lat || s.latitude));
+          const sLon = typeof s.lon === 'number' ? s.lon : (typeof s.longitude === 'number' ? s.longitude : parseFloat(s.lon || s.longitude));
+          if (!isNaN(sLat) && !isNaN(sLon)) {
+            latlngs.push([sLat, sLon]);
           }
         });
 
         if (latlngs.length > 1) {
-          const poly = L.polyline(latlngs, {
-            color: color,
-            weight: isSelected ? 4 : 2,
-            opacity: isSelected ? 0.95 : 0.45,
-            dashArray: rider.status === 'IDLE' ? '4, 6' : null
-          });
-          poly.addTo(routeLayer);
+          try {
+            const poly = L.polyline(latlngs, {
+              color: color,
+              weight: isSelected ? 4 : 2,
+              opacity: isSelected ? 0.95 : 0.45,
+              dashArray: rider.status === 'IDLE' ? '4, 6' : null
+            });
+            poly.addTo(routeLayer);
+          } catch (e) {
+            // ignore polyline render error
+          }
         }
       }
 
@@ -265,7 +332,7 @@ export default function DeliveryMap({
         iconAnchor: [isSelected ? 14 : 11, isSelected ? 14 : 11]
       });
 
-      const marker = L.marker([rider.current_lat, rider.current_lon], { icon });
+      const marker = L.marker([rLat, rLon], { icon });
       marker.on('click', () => onSelectRider(rider.rider_id));
 
       marker.bindPopup(`
@@ -274,8 +341,8 @@ export default function DeliveryMap({
           <span style="font-size: 10px; background:#1e293b; padding:2px 6px; border-radius:4px; margin-left:4px;">
             ${rider.status}
           </span><br/>
-          Load: <strong>${(rider.current_load_kg || 0).toFixed(1)} / ${(rider.capacity_kg || 15).toFixed(1)} kg</strong><br/>
-          Distance Covered: <strong>${(rider.distance_traveled_km || 0).toFixed(1)} km</strong><br/>
+          Load: <strong>${rider.current_load ?? rider.carried_orders?.length ?? 0} / ${rider.capacity || 15}</strong><br/>
+          Distance Covered: <strong>${(rider.total_distance_km || 0).toFixed(1)} km</strong><br/>
           Remaining Stops: <strong>${stops.length}</strong>
         </div>
       `);

@@ -59,7 +59,7 @@ export const api = {
     return handleResponse(await fetch(`${API_BASE}/simulation/step`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dt_minutes: dtMinutes }),
+      body: JSON.stringify({ delta_time_min: dtMinutes, dt_minutes: dtMinutes }),
     }));
   },
   async resetSimulation() {
@@ -100,10 +100,15 @@ export const api = {
 
   // ACO Optimization & Metrics
   async runOptimization(params = {}) {
+    const payload = {
+      ...params,
+      num_iterations: params.num_iterations || params.iterations || 20,
+      iterations: params.iterations || params.num_iterations || 20,
+    };
     return handleResponse(await fetch(`${API_BASE}/optimization/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
+      body: JSON.stringify(payload),
     }));
   },
   async getOptimizationMetrics() {

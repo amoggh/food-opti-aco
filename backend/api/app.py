@@ -57,9 +57,10 @@ async def broadcast_state(state: Dict[str, Any]):
     if not active_websockets:
         return
     disconnected = set()
+    payload = {"type": "SIM_STATE_UPDATE", "state": state, **state}
     for ws in active_websockets:
         try:
-            await ws.send_json(state)
+            await ws.send_json(payload)
         except Exception:
             disconnected.add(ws)
     active_websockets.difference_update(disconnected)
@@ -102,10 +103,13 @@ def get_graph():
 # --- Simulation Control Endpoints ---
 @app.post("/api/simulation/start")
 async def start_simulation():
+    # If no delivery plan has been computed yet, automatically reoptimize to assign routes
+    if not sim_engine.active_plan:
+        sim_engine.reoptimize(aco_ants=12, aco_iterations=15)
     sim_engine.start()
     snapshot = sim_engine.get_snapshot()
     await broadcast_state(snapshot)
-    return {"message": "Simulation started", "snapshot": snapshot}
+    return {"message": "Simulation started", "snapshot": snapshot, "state": snapshot, **snapshot}
 
 
 @app.post("/api/simulation/pause")
@@ -113,7 +117,7 @@ async def pause_simulation():
     sim_engine.pause()
     snapshot = sim_engine.get_snapshot()
     await broadcast_state(snapshot)
-    return {"message": "Simulation paused", "snapshot": snapshot}
+    return {"message": "Simulation paused", "snapshot": snapshot, "state": snapshot, **snapshot}
 
 
 @app.post("/api/simulation/reset")
@@ -121,15 +125,15 @@ async def reset_simulation():
     sim_engine.reset()
     snapshot = sim_engine.get_snapshot()
     await broadcast_state(snapshot)
-    return {"message": "Simulation reset to initial state", "snapshot": snapshot}
+    return {"message": "Simulation reset to initial state", "snapshot": snapshot, "state": snapshot, **snapshot}
 
 
 @app.post("/api/simulation/step")
 async def step_simulation(req: Optional[SimulationStepRequest] = None):
-    dt = req.delta_time_min if req else 1.0
+    dt = req.get_dt() if req else 1.0
     snapshot = sim_engine.step(delta_time_min=dt)
     await broadcast_state(snapshot)
-    return snapshot
+    return {"snapshot": snapshot, "state": snapshot, **snapshot}
 
 
 @app.get("/api/simulation/state")
@@ -202,14 +206,30 @@ async def trigger_rider_unavailable(req: RiderUnavailableRequest):
 @app.post("/api/optimization/run")
 async def run_optimization(req: Optional[OptimizationRunRequest] = None):
     ants = req.num_ants if req else 12
-    iters = req.num_iterations if req else 15
+    iters = req.get_iterations() if req else 15
     plan = sim_engine.reoptimize(aco_ants=ants, aco_iterations=iters)
     snapshot = sim_engine.get_snapshot()
     await broadcast_state(snapshot)
+
+    conv_hist = []
+    last_res = getattr(sim_engine, "last_reopt_result", None)
+    if last_res and getattr(last_res, "convergence_history", None):
+        conv_hist = [
+            h.get("best_cost", h.get("cost", 0.0)) if isinstance(h, dict) else float(h)
+            for h in last_res.convergence_history
+        ]
+
+    plan_dict = plan.to_dict() if plan else None
+    best_cost = plan.fitness_cost if plan else 0.0
+
     return {
         "message": "Optimization completed",
-        "plan": plan.to_dict() if plan else None,
+        "plan": plan_dict,
+        "best_plan": plan_dict,
+        "best_cost": best_cost,
+        "convergence_history": conv_hist,
         "snapshot": snapshot,
+        "state": snapshot,
     }
 
 
@@ -230,15 +250,18 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
     active_websockets.add(websocket)
     try:
         # Send initial state immediately
-        await websocket.send_json(sim_engine.get_snapshot())
+        snap = sim_engine.get_snapshot()
+        await websocket.send_json({"type": "SIM_STATE_UPDATE", "state": snap, **snap})
         while True:
             data = await websocket.receive_json()
-            cmd = data.get("command")
+            cmd = data.get("command") or data.get("action")
             if cmd == "step":
                 dt = data.get("delta_time_min", 1.0)
                 snapshot = sim_engine.step(delta_time_min=dt)
                 await broadcast_state(snapshot)
             elif cmd == "start":
+                if not sim_engine.active_plan:
+                    sim_engine.reoptimize(aco_ants=12, aco_iterations=15)
                 sim_engine.start()
                 await broadcast_state(sim_engine.get_snapshot())
             elif cmd == "pause":

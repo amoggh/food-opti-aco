@@ -79,6 +79,16 @@ class SimRider:
             "carried_orders": list(self.carried_orders),
             "current_load": len(self.carried_orders),
             "remaining_stops": [s.node_id for s in self.assigned_stops],
+            "assigned_stops": [
+                {
+                    "node_id": s.node_id,
+                    "task_type": s.task_type,
+                    "order_id": s.order_id,
+                    "lat": s.lat,
+                    "lon": s.lon,
+                }
+                for s in self.assigned_stops
+            ],
             "total_distance_km": round(self.total_distance_km, 3),
             "orders_delivered": list(self.orders_delivered),
         }
@@ -399,6 +409,7 @@ class SimulationEngine:
         )
         result = aco.optimize(verbose=False)
         self.active_plan = result.best_plan
+        self.last_reopt_result = result
         self.last_reopt_time_min = self.sim_time_min
 
         # Re-assign new tour stops to riders
