@@ -1,0 +1,5586 @@
+{
+  "nodes": [
+    {
+      "node_id": "NODE_0001",
+      "lat": 12.9,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0002",
+      "lat": 12.9,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0003",
+      "lat": 12.9,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0004",
+      "lat": 12.9,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0005",
+      "lat": 12.9,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0006",
+      "lat": 12.9,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0007",
+      "lat": 12.9,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0008",
+      "lat": 12.9,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0009",
+      "lat": 12.9,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0010",
+      "lat": 12.9,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0011",
+      "lat": 12.9,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0012",
+      "lat": 12.9,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0013",
+      "lat": 12.913636,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0014",
+      "lat": 12.913636,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0015",
+      "lat": 12.913636,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0016",
+      "lat": 12.913636,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0017",
+      "lat": 12.913636,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0018",
+      "lat": 12.913636,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0019",
+      "lat": 12.913636,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0020",
+      "lat": 12.913636,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0021",
+      "lat": 12.913636,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0022",
+      "lat": 12.913636,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0023",
+      "lat": 12.913636,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0024",
+      "lat": 12.913636,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0025",
+      "lat": 12.927273,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0026",
+      "lat": 12.927273,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0027",
+      "lat": 12.927273,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0028",
+      "lat": 12.927273,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0029",
+      "lat": 12.927273,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0030",
+      "lat": 12.927273,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0031",
+      "lat": 12.927273,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0032",
+      "lat": 12.927273,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0033",
+      "lat": 12.927273,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0034",
+      "lat": 12.927273,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0035",
+      "lat": 12.927273,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0036",
+      "lat": 12.927273,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0037",
+      "lat": 12.940909,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0038",
+      "lat": 12.940909,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0039",
+      "lat": 12.940909,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0040",
+      "lat": 12.940909,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0041",
+      "lat": 12.940909,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0042",
+      "lat": 12.940909,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0043",
+      "lat": 12.940909,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0044",
+      "lat": 12.940909,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0045",
+      "lat": 12.940909,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0046",
+      "lat": 12.940909,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0047",
+      "lat": 12.940909,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0048",
+      "lat": 12.940909,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0049",
+      "lat": 12.954545,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0050",
+      "lat": 12.954545,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0051",
+      "lat": 12.954545,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0052",
+      "lat": 12.954545,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0053",
+      "lat": 12.954545,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0054",
+      "lat": 12.954545,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0055",
+      "lat": 12.954545,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0056",
+      "lat": 12.954545,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0057",
+      "lat": 12.954545,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0058",
+      "lat": 12.954545,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0059",
+      "lat": 12.954545,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0060",
+      "lat": 12.954545,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0061",
+      "lat": 12.968182,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0062",
+      "lat": 12.968182,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0063",
+      "lat": 12.968182,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0064",
+      "lat": 12.968182,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0065",
+      "lat": 12.968182,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0066",
+      "lat": 12.968182,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0067",
+      "lat": 12.968182,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0068",
+      "lat": 12.968182,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0069",
+      "lat": 12.968182,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0070",
+      "lat": 12.968182,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0071",
+      "lat": 12.968182,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0072",
+      "lat": 12.968182,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0073",
+      "lat": 12.981818,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0074",
+      "lat": 12.981818,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0075",
+      "lat": 12.981818,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0076",
+      "lat": 12.981818,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0077",
+      "lat": 12.981818,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0078",
+      "lat": 12.981818,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0079",
+      "lat": 12.981818,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0080",
+      "lat": 12.981818,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0081",
+      "lat": 12.981818,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0082",
+      "lat": 12.981818,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0083",
+      "lat": 12.981818,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0084",
+      "lat": 12.981818,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0085",
+      "lat": 12.995455,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0086",
+      "lat": 12.995455,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0087",
+      "lat": 12.995455,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0088",
+      "lat": 12.995455,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0089",
+      "lat": 12.995455,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0090",
+      "lat": 12.995455,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0091",
+      "lat": 12.995455,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0092",
+      "lat": 12.995455,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0093",
+      "lat": 12.995455,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0094",
+      "lat": 12.995455,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0095",
+      "lat": 12.995455,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0096",
+      "lat": 12.995455,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0097",
+      "lat": 13.009091,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0098",
+      "lat": 13.009091,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0099",
+      "lat": 13.009091,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0100",
+      "lat": 13.009091,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0101",
+      "lat": 13.009091,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0102",
+      "lat": 13.009091,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0103",
+      "lat": 13.009091,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0104",
+      "lat": 13.009091,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0105",
+      "lat": 13.009091,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0106",
+      "lat": 13.009091,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0107",
+      "lat": 13.009091,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0108",
+      "lat": 13.009091,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0109",
+      "lat": 13.022727,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0110",
+      "lat": 13.022727,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0111",
+      "lat": 13.022727,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0112",
+      "lat": 13.022727,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0113",
+      "lat": 13.022727,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0114",
+      "lat": 13.022727,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0115",
+      "lat": 13.022727,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0116",
+      "lat": 13.022727,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0117",
+      "lat": 13.022727,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0118",
+      "lat": 13.022727,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0119",
+      "lat": 13.022727,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0120",
+      "lat": 13.022727,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0121",
+      "lat": 13.036364,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0122",
+      "lat": 13.036364,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0123",
+      "lat": 13.036364,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0124",
+      "lat": 13.036364,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0125",
+      "lat": 13.036364,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0126",
+      "lat": 13.036364,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0127",
+      "lat": 13.036364,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0128",
+      "lat": 13.036364,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0129",
+      "lat": 13.036364,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0130",
+      "lat": 13.036364,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0131",
+      "lat": 13.036364,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0132",
+      "lat": 13.036364,
+      "lon": 77.68
+    },
+    {
+      "node_id": "NODE_0133",
+      "lat": 13.05,
+      "lon": 77.52
+    },
+    {
+      "node_id": "NODE_0134",
+      "lat": 13.05,
+      "lon": 77.534545
+    },
+    {
+      "node_id": "NODE_0135",
+      "lat": 13.05,
+      "lon": 77.549091
+    },
+    {
+      "node_id": "NODE_0136",
+      "lat": 13.05,
+      "lon": 77.563636
+    },
+    {
+      "node_id": "NODE_0137",
+      "lat": 13.05,
+      "lon": 77.578182
+    },
+    {
+      "node_id": "NODE_0138",
+      "lat": 13.05,
+      "lon": 77.592727
+    },
+    {
+      "node_id": "NODE_0139",
+      "lat": 13.05,
+      "lon": 77.607273
+    },
+    {
+      "node_id": "NODE_0140",
+      "lat": 13.05,
+      "lon": 77.621818
+    },
+    {
+      "node_id": "NODE_0141",
+      "lat": 13.05,
+      "lon": 77.636364
+    },
+    {
+      "node_id": "NODE_0142",
+      "lat": 13.05,
+      "lon": 77.650909
+    },
+    {
+      "node_id": "NODE_0143",
+      "lat": 13.05,
+      "lon": 77.665455
+    },
+    {
+      "node_id": "NODE_0144",
+      "lat": 13.05,
+      "lon": 77.68
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "EDGE_00001",
+      "u": "NODE_0001",
+      "v": "NODE_0002",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00001_rev",
+      "u": "NODE_0002",
+      "v": "NODE_0001",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00002",
+      "u": "NODE_0001",
+      "v": "NODE_0013",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00002_rev",
+      "u": "NODE_0013",
+      "v": "NODE_0001",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00003",
+      "u": "NODE_0002",
+      "v": "NODE_0003",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00003_rev",
+      "u": "NODE_0003",
+      "v": "NODE_0002",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00004",
+      "u": "NODE_0002",
+      "v": "NODE_0014",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00004_rev",
+      "u": "NODE_0014",
+      "v": "NODE_0002",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00005",
+      "u": "NODE_0003",
+      "v": "NODE_0004",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00005_rev",
+      "u": "NODE_0004",
+      "v": "NODE_0003",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00006",
+      "u": "NODE_0003",
+      "v": "NODE_0015",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00006_rev",
+      "u": "NODE_0015",
+      "v": "NODE_0003",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00007",
+      "u": "NODE_0004",
+      "v": "NODE_0005",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00007_rev",
+      "u": "NODE_0005",
+      "v": "NODE_0004",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00008",
+      "u": "NODE_0004",
+      "v": "NODE_0016",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00008_rev",
+      "u": "NODE_0016",
+      "v": "NODE_0004",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00009",
+      "u": "NODE_0005",
+      "v": "NODE_0006",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00009_rev",
+      "u": "NODE_0006",
+      "v": "NODE_0005",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00010",
+      "u": "NODE_0005",
+      "v": "NODE_0017",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00010_rev",
+      "u": "NODE_0017",
+      "v": "NODE_0005",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00011",
+      "u": "NODE_0006",
+      "v": "NODE_0007",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00011_rev",
+      "u": "NODE_0007",
+      "v": "NODE_0006",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00012",
+      "u": "NODE_0006",
+      "v": "NODE_0018",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00012_rev",
+      "u": "NODE_0018",
+      "v": "NODE_0006",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00013",
+      "u": "NODE_0007",
+      "v": "NODE_0008",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00013_rev",
+      "u": "NODE_0008",
+      "v": "NODE_0007",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00014",
+      "u": "NODE_0007",
+      "v": "NODE_0019",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00014_rev",
+      "u": "NODE_0019",
+      "v": "NODE_0007",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00015",
+      "u": "NODE_0008",
+      "v": "NODE_0009",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00015_rev",
+      "u": "NODE_0009",
+      "v": "NODE_0008",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00016",
+      "u": "NODE_0008",
+      "v": "NODE_0020",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00016_rev",
+      "u": "NODE_0020",
+      "v": "NODE_0008",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00017",
+      "u": "NODE_0009",
+      "v": "NODE_0010",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00017_rev",
+      "u": "NODE_0010",
+      "v": "NODE_0009",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00018",
+      "u": "NODE_0009",
+      "v": "NODE_0021",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00018_rev",
+      "u": "NODE_0021",
+      "v": "NODE_0009",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00019",
+      "u": "NODE_0010",
+      "v": "NODE_0011",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00019_rev",
+      "u": "NODE_0011",
+      "v": "NODE_0010",
+      "distance_km": 1.5766,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00020",
+      "u": "NODE_0010",
+      "v": "NODE_0022",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00020_rev",
+      "u": "NODE_0022",
+      "v": "NODE_0010",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00021",
+      "u": "NODE_0011",
+      "v": "NODE_0012",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00021_rev",
+      "u": "NODE_0012",
+      "v": "NODE_0011",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00022",
+      "u": "NODE_0011",
+      "v": "NODE_0023",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00022_rev",
+      "u": "NODE_0023",
+      "v": "NODE_0011",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00023",
+      "u": "NODE_0012",
+      "v": "NODE_0024",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00023_rev",
+      "u": "NODE_0024",
+      "v": "NODE_0012",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00024",
+      "u": "NODE_0013",
+      "v": "NODE_0014",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00024_rev",
+      "u": "NODE_0014",
+      "v": "NODE_0013",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00025",
+      "u": "NODE_0013",
+      "v": "NODE_0025",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00025_rev",
+      "u": "NODE_0025",
+      "v": "NODE_0013",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00026",
+      "u": "NODE_0014",
+      "v": "NODE_0015",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00026_rev",
+      "u": "NODE_0015",
+      "v": "NODE_0014",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00027",
+      "u": "NODE_0014",
+      "v": "NODE_0026",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00027_rev",
+      "u": "NODE_0026",
+      "v": "NODE_0014",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00028",
+      "u": "NODE_0015",
+      "v": "NODE_0016",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00028_rev",
+      "u": "NODE_0016",
+      "v": "NODE_0015",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00029",
+      "u": "NODE_0015",
+      "v": "NODE_0027",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00029_rev",
+      "u": "NODE_0027",
+      "v": "NODE_0015",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00030",
+      "u": "NODE_0016",
+      "v": "NODE_0017",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00030_rev",
+      "u": "NODE_0017",
+      "v": "NODE_0016",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00031",
+      "u": "NODE_0016",
+      "v": "NODE_0028",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00031_rev",
+      "u": "NODE_0028",
+      "v": "NODE_0016",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00032",
+      "u": "NODE_0017",
+      "v": "NODE_0018",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00032_rev",
+      "u": "NODE_0018",
+      "v": "NODE_0017",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00033",
+      "u": "NODE_0017",
+      "v": "NODE_0029",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00033_rev",
+      "u": "NODE_0029",
+      "v": "NODE_0017",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00034",
+      "u": "NODE_0018",
+      "v": "NODE_0019",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00034_rev",
+      "u": "NODE_0019",
+      "v": "NODE_0018",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00035",
+      "u": "NODE_0018",
+      "v": "NODE_0030",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00035_rev",
+      "u": "NODE_0030",
+      "v": "NODE_0018",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00036",
+      "u": "NODE_0019",
+      "v": "NODE_0020",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00036_rev",
+      "u": "NODE_0020",
+      "v": "NODE_0019",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00037",
+      "u": "NODE_0019",
+      "v": "NODE_0031",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00037_rev",
+      "u": "NODE_0031",
+      "v": "NODE_0019",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00038",
+      "u": "NODE_0020",
+      "v": "NODE_0021",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00038_rev",
+      "u": "NODE_0021",
+      "v": "NODE_0020",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00039",
+      "u": "NODE_0020",
+      "v": "NODE_0032",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00039_rev",
+      "u": "NODE_0032",
+      "v": "NODE_0020",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00040",
+      "u": "NODE_0021",
+      "v": "NODE_0022",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00040_rev",
+      "u": "NODE_0022",
+      "v": "NODE_0021",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00041",
+      "u": "NODE_0021",
+      "v": "NODE_0033",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00041_rev",
+      "u": "NODE_0033",
+      "v": "NODE_0021",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00042",
+      "u": "NODE_0022",
+      "v": "NODE_0023",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00042_rev",
+      "u": "NODE_0023",
+      "v": "NODE_0022",
+      "distance_km": 1.5765,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00043",
+      "u": "NODE_0022",
+      "v": "NODE_0034",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00043_rev",
+      "u": "NODE_0034",
+      "v": "NODE_0022",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00044",
+      "u": "NODE_0023",
+      "v": "NODE_0024",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00044_rev",
+      "u": "NODE_0024",
+      "v": "NODE_0023",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00045",
+      "u": "NODE_0023",
+      "v": "NODE_0035",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00045_rev",
+      "u": "NODE_0035",
+      "v": "NODE_0023",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00046",
+      "u": "NODE_0024",
+      "v": "NODE_0036",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00046_rev",
+      "u": "NODE_0036",
+      "v": "NODE_0024",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00047",
+      "u": "NODE_0025",
+      "v": "NODE_0026",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00047_rev",
+      "u": "NODE_0026",
+      "v": "NODE_0025",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00048",
+      "u": "NODE_0025",
+      "v": "NODE_0037",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00048_rev",
+      "u": "NODE_0037",
+      "v": "NODE_0025",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00049",
+      "u": "NODE_0026",
+      "v": "NODE_0027",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00049_rev",
+      "u": "NODE_0027",
+      "v": "NODE_0026",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00050",
+      "u": "NODE_0026",
+      "v": "NODE_0038",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00050_rev",
+      "u": "NODE_0038",
+      "v": "NODE_0026",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00051",
+      "u": "NODE_0027",
+      "v": "NODE_0028",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00051_rev",
+      "u": "NODE_0028",
+      "v": "NODE_0027",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00052",
+      "u": "NODE_0027",
+      "v": "NODE_0039",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00052_rev",
+      "u": "NODE_0039",
+      "v": "NODE_0027",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00053",
+      "u": "NODE_0028",
+      "v": "NODE_0029",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00053_rev",
+      "u": "NODE_0029",
+      "v": "NODE_0028",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00054",
+      "u": "NODE_0028",
+      "v": "NODE_0040",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00054_rev",
+      "u": "NODE_0040",
+      "v": "NODE_0028",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00055",
+      "u": "NODE_0029",
+      "v": "NODE_0030",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00055_rev",
+      "u": "NODE_0030",
+      "v": "NODE_0029",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00056",
+      "u": "NODE_0029",
+      "v": "NODE_0041",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00056_rev",
+      "u": "NODE_0041",
+      "v": "NODE_0029",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00057",
+      "u": "NODE_0030",
+      "v": "NODE_0031",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00057_rev",
+      "u": "NODE_0031",
+      "v": "NODE_0030",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00058",
+      "u": "NODE_0030",
+      "v": "NODE_0042",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00058_rev",
+      "u": "NODE_0042",
+      "v": "NODE_0030",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00059",
+      "u": "NODE_0031",
+      "v": "NODE_0032",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00059_rev",
+      "u": "NODE_0032",
+      "v": "NODE_0031",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00060",
+      "u": "NODE_0031",
+      "v": "NODE_0043",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00060_rev",
+      "u": "NODE_0043",
+      "v": "NODE_0031",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00061",
+      "u": "NODE_0032",
+      "v": "NODE_0033",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00061_rev",
+      "u": "NODE_0033",
+      "v": "NODE_0032",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00062",
+      "u": "NODE_0032",
+      "v": "NODE_0044",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00062_rev",
+      "u": "NODE_0044",
+      "v": "NODE_0032",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00063",
+      "u": "NODE_0033",
+      "v": "NODE_0034",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00063_rev",
+      "u": "NODE_0034",
+      "v": "NODE_0033",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00064",
+      "u": "NODE_0033",
+      "v": "NODE_0045",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00064_rev",
+      "u": "NODE_0045",
+      "v": "NODE_0033",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00065",
+      "u": "NODE_0034",
+      "v": "NODE_0035",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00065_rev",
+      "u": "NODE_0035",
+      "v": "NODE_0034",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00066",
+      "u": "NODE_0034",
+      "v": "NODE_0046",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00066_rev",
+      "u": "NODE_0046",
+      "v": "NODE_0034",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00067",
+      "u": "NODE_0035",
+      "v": "NODE_0036",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00067_rev",
+      "u": "NODE_0036",
+      "v": "NODE_0035",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00068",
+      "u": "NODE_0035",
+      "v": "NODE_0047",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00068_rev",
+      "u": "NODE_0047",
+      "v": "NODE_0035",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00069",
+      "u": "NODE_0036",
+      "v": "NODE_0048",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00069_rev",
+      "u": "NODE_0048",
+      "v": "NODE_0036",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00070",
+      "u": "NODE_0037",
+      "v": "NODE_0038",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00070_rev",
+      "u": "NODE_0038",
+      "v": "NODE_0037",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00071",
+      "u": "NODE_0037",
+      "v": "NODE_0049",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00071_rev",
+      "u": "NODE_0049",
+      "v": "NODE_0037",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00072",
+      "u": "NODE_0038",
+      "v": "NODE_0039",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00072_rev",
+      "u": "NODE_0039",
+      "v": "NODE_0038",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00073",
+      "u": "NODE_0038",
+      "v": "NODE_0050",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00073_rev",
+      "u": "NODE_0050",
+      "v": "NODE_0038",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00074",
+      "u": "NODE_0039",
+      "v": "NODE_0040",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00074_rev",
+      "u": "NODE_0040",
+      "v": "NODE_0039",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00075",
+      "u": "NODE_0039",
+      "v": "NODE_0051",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00075_rev",
+      "u": "NODE_0051",
+      "v": "NODE_0039",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00076",
+      "u": "NODE_0040",
+      "v": "NODE_0041",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00076_rev",
+      "u": "NODE_0041",
+      "v": "NODE_0040",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00077",
+      "u": "NODE_0040",
+      "v": "NODE_0052",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00077_rev",
+      "u": "NODE_0052",
+      "v": "NODE_0040",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00078",
+      "u": "NODE_0041",
+      "v": "NODE_0042",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00078_rev",
+      "u": "NODE_0042",
+      "v": "NODE_0041",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00079",
+      "u": "NODE_0041",
+      "v": "NODE_0053",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00079_rev",
+      "u": "NODE_0053",
+      "v": "NODE_0041",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00080",
+      "u": "NODE_0042",
+      "v": "NODE_0043",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00080_rev",
+      "u": "NODE_0043",
+      "v": "NODE_0042",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00081",
+      "u": "NODE_0042",
+      "v": "NODE_0054",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00081_rev",
+      "u": "NODE_0054",
+      "v": "NODE_0042",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00082",
+      "u": "NODE_0043",
+      "v": "NODE_0044",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00082_rev",
+      "u": "NODE_0044",
+      "v": "NODE_0043",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00083",
+      "u": "NODE_0043",
+      "v": "NODE_0055",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00083_rev",
+      "u": "NODE_0055",
+      "v": "NODE_0043",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00084",
+      "u": "NODE_0044",
+      "v": "NODE_0045",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00084_rev",
+      "u": "NODE_0045",
+      "v": "NODE_0044",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00085",
+      "u": "NODE_0044",
+      "v": "NODE_0056",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00085_rev",
+      "u": "NODE_0056",
+      "v": "NODE_0044",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00086",
+      "u": "NODE_0045",
+      "v": "NODE_0046",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00086_rev",
+      "u": "NODE_0046",
+      "v": "NODE_0045",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00087",
+      "u": "NODE_0045",
+      "v": "NODE_0057",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00087_rev",
+      "u": "NODE_0057",
+      "v": "NODE_0045",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00088",
+      "u": "NODE_0046",
+      "v": "NODE_0047",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00088_rev",
+      "u": "NODE_0047",
+      "v": "NODE_0046",
+      "distance_km": 1.5764,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00089",
+      "u": "NODE_0046",
+      "v": "NODE_0058",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00089_rev",
+      "u": "NODE_0058",
+      "v": "NODE_0046",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00090",
+      "u": "NODE_0047",
+      "v": "NODE_0048",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00090_rev",
+      "u": "NODE_0048",
+      "v": "NODE_0047",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00091",
+      "u": "NODE_0047",
+      "v": "NODE_0059",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00091_rev",
+      "u": "NODE_0059",
+      "v": "NODE_0047",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00092",
+      "u": "NODE_0048",
+      "v": "NODE_0060",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00092_rev",
+      "u": "NODE_0060",
+      "v": "NODE_0048",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00093",
+      "u": "NODE_0049",
+      "v": "NODE_0050",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00093_rev",
+      "u": "NODE_0050",
+      "v": "NODE_0049",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00094",
+      "u": "NODE_0049",
+      "v": "NODE_0061",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00094_rev",
+      "u": "NODE_0061",
+      "v": "NODE_0049",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00095",
+      "u": "NODE_0050",
+      "v": "NODE_0051",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00095_rev",
+      "u": "NODE_0051",
+      "v": "NODE_0050",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00096",
+      "u": "NODE_0050",
+      "v": "NODE_0062",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00096_rev",
+      "u": "NODE_0062",
+      "v": "NODE_0050",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00097",
+      "u": "NODE_0051",
+      "v": "NODE_0052",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00097_rev",
+      "u": "NODE_0052",
+      "v": "NODE_0051",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00098",
+      "u": "NODE_0051",
+      "v": "NODE_0063",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00098_rev",
+      "u": "NODE_0063",
+      "v": "NODE_0051",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00099",
+      "u": "NODE_0052",
+      "v": "NODE_0053",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00099_rev",
+      "u": "NODE_0053",
+      "v": "NODE_0052",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00100",
+      "u": "NODE_0052",
+      "v": "NODE_0064",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00100_rev",
+      "u": "NODE_0064",
+      "v": "NODE_0052",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00101",
+      "u": "NODE_0053",
+      "v": "NODE_0054",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00101_rev",
+      "u": "NODE_0054",
+      "v": "NODE_0053",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00102",
+      "u": "NODE_0053",
+      "v": "NODE_0065",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00102_rev",
+      "u": "NODE_0065",
+      "v": "NODE_0053",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00103",
+      "u": "NODE_0054",
+      "v": "NODE_0055",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00103_rev",
+      "u": "NODE_0055",
+      "v": "NODE_0054",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00104",
+      "u": "NODE_0054",
+      "v": "NODE_0066",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00104_rev",
+      "u": "NODE_0066",
+      "v": "NODE_0054",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00105",
+      "u": "NODE_0055",
+      "v": "NODE_0056",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00105_rev",
+      "u": "NODE_0056",
+      "v": "NODE_0055",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00106",
+      "u": "NODE_0055",
+      "v": "NODE_0067",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00106_rev",
+      "u": "NODE_0067",
+      "v": "NODE_0055",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00107",
+      "u": "NODE_0056",
+      "v": "NODE_0057",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00107_rev",
+      "u": "NODE_0057",
+      "v": "NODE_0056",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00108",
+      "u": "NODE_0056",
+      "v": "NODE_0068",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00108_rev",
+      "u": "NODE_0068",
+      "v": "NODE_0056",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00109",
+      "u": "NODE_0057",
+      "v": "NODE_0058",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00109_rev",
+      "u": "NODE_0058",
+      "v": "NODE_0057",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00110",
+      "u": "NODE_0057",
+      "v": "NODE_0069",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00110_rev",
+      "u": "NODE_0069",
+      "v": "NODE_0057",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00111",
+      "u": "NODE_0058",
+      "v": "NODE_0059",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00111_rev",
+      "u": "NODE_0059",
+      "v": "NODE_0058",
+      "distance_km": 1.5763,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00112",
+      "u": "NODE_0058",
+      "v": "NODE_0070",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00112_rev",
+      "u": "NODE_0070",
+      "v": "NODE_0058",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00113",
+      "u": "NODE_0059",
+      "v": "NODE_0060",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00113_rev",
+      "u": "NODE_0060",
+      "v": "NODE_0059",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00114",
+      "u": "NODE_0059",
+      "v": "NODE_0071",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00114_rev",
+      "u": "NODE_0071",
+      "v": "NODE_0059",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00115",
+      "u": "NODE_0060",
+      "v": "NODE_0072",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00115_rev",
+      "u": "NODE_0072",
+      "v": "NODE_0060",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00116",
+      "u": "NODE_0061",
+      "v": "NODE_0062",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00116_rev",
+      "u": "NODE_0062",
+      "v": "NODE_0061",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00117",
+      "u": "NODE_0061",
+      "v": "NODE_0073",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00117_rev",
+      "u": "NODE_0073",
+      "v": "NODE_0061",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00118",
+      "u": "NODE_0062",
+      "v": "NODE_0063",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00118_rev",
+      "u": "NODE_0063",
+      "v": "NODE_0062",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00119",
+      "u": "NODE_0062",
+      "v": "NODE_0074",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00119_rev",
+      "u": "NODE_0074",
+      "v": "NODE_0062",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00120",
+      "u": "NODE_0063",
+      "v": "NODE_0064",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00120_rev",
+      "u": "NODE_0064",
+      "v": "NODE_0063",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00121",
+      "u": "NODE_0063",
+      "v": "NODE_0075",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00121_rev",
+      "u": "NODE_0075",
+      "v": "NODE_0063",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00122",
+      "u": "NODE_0064",
+      "v": "NODE_0065",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00122_rev",
+      "u": "NODE_0065",
+      "v": "NODE_0064",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00123",
+      "u": "NODE_0064",
+      "v": "NODE_0076",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00123_rev",
+      "u": "NODE_0076",
+      "v": "NODE_0064",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00124",
+      "u": "NODE_0065",
+      "v": "NODE_0066",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00124_rev",
+      "u": "NODE_0066",
+      "v": "NODE_0065",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00125",
+      "u": "NODE_0065",
+      "v": "NODE_0077",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00125_rev",
+      "u": "NODE_0077",
+      "v": "NODE_0065",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00126",
+      "u": "NODE_0066",
+      "v": "NODE_0067",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00126_rev",
+      "u": "NODE_0067",
+      "v": "NODE_0066",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00127",
+      "u": "NODE_0066",
+      "v": "NODE_0078",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00127_rev",
+      "u": "NODE_0078",
+      "v": "NODE_0066",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00128",
+      "u": "NODE_0067",
+      "v": "NODE_0068",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00128_rev",
+      "u": "NODE_0068",
+      "v": "NODE_0067",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00129",
+      "u": "NODE_0067",
+      "v": "NODE_0079",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00129_rev",
+      "u": "NODE_0079",
+      "v": "NODE_0067",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00130",
+      "u": "NODE_0068",
+      "v": "NODE_0069",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00130_rev",
+      "u": "NODE_0069",
+      "v": "NODE_0068",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00131",
+      "u": "NODE_0068",
+      "v": "NODE_0080",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00131_rev",
+      "u": "NODE_0080",
+      "v": "NODE_0068",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00132",
+      "u": "NODE_0069",
+      "v": "NODE_0070",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00132_rev",
+      "u": "NODE_0070",
+      "v": "NODE_0069",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00133",
+      "u": "NODE_0069",
+      "v": "NODE_0081",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00133_rev",
+      "u": "NODE_0081",
+      "v": "NODE_0069",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00134",
+      "u": "NODE_0070",
+      "v": "NODE_0071",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00134_rev",
+      "u": "NODE_0071",
+      "v": "NODE_0070",
+      "distance_km": 1.5762,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00135",
+      "u": "NODE_0070",
+      "v": "NODE_0082",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00135_rev",
+      "u": "NODE_0082",
+      "v": "NODE_0070",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00136",
+      "u": "NODE_0071",
+      "v": "NODE_0072",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00136_rev",
+      "u": "NODE_0072",
+      "v": "NODE_0071",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00137",
+      "u": "NODE_0071",
+      "v": "NODE_0083",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00137_rev",
+      "u": "NODE_0083",
+      "v": "NODE_0071",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00138",
+      "u": "NODE_0072",
+      "v": "NODE_0084",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00138_rev",
+      "u": "NODE_0084",
+      "v": "NODE_0072",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00139",
+      "u": "NODE_0073",
+      "v": "NODE_0074",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00139_rev",
+      "u": "NODE_0074",
+      "v": "NODE_0073",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00140",
+      "u": "NODE_0073",
+      "v": "NODE_0085",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00140_rev",
+      "u": "NODE_0085",
+      "v": "NODE_0073",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00141",
+      "u": "NODE_0074",
+      "v": "NODE_0075",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00141_rev",
+      "u": "NODE_0075",
+      "v": "NODE_0074",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00142",
+      "u": "NODE_0074",
+      "v": "NODE_0086",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00142_rev",
+      "u": "NODE_0086",
+      "v": "NODE_0074",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00143",
+      "u": "NODE_0075",
+      "v": "NODE_0076",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00143_rev",
+      "u": "NODE_0076",
+      "v": "NODE_0075",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00144",
+      "u": "NODE_0075",
+      "v": "NODE_0087",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00144_rev",
+      "u": "NODE_0087",
+      "v": "NODE_0075",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00145",
+      "u": "NODE_0076",
+      "v": "NODE_0077",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00145_rev",
+      "u": "NODE_0077",
+      "v": "NODE_0076",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00146",
+      "u": "NODE_0076",
+      "v": "NODE_0088",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00146_rev",
+      "u": "NODE_0088",
+      "v": "NODE_0076",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00147",
+      "u": "NODE_0077",
+      "v": "NODE_0078",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00147_rev",
+      "u": "NODE_0078",
+      "v": "NODE_0077",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00148",
+      "u": "NODE_0077",
+      "v": "NODE_0089",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00148_rev",
+      "u": "NODE_0089",
+      "v": "NODE_0077",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00149",
+      "u": "NODE_0078",
+      "v": "NODE_0079",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00149_rev",
+      "u": "NODE_0079",
+      "v": "NODE_0078",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00150",
+      "u": "NODE_0078",
+      "v": "NODE_0090",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00150_rev",
+      "u": "NODE_0090",
+      "v": "NODE_0078",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00151",
+      "u": "NODE_0079",
+      "v": "NODE_0080",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00151_rev",
+      "u": "NODE_0080",
+      "v": "NODE_0079",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00152",
+      "u": "NODE_0079",
+      "v": "NODE_0091",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00152_rev",
+      "u": "NODE_0091",
+      "v": "NODE_0079",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00153",
+      "u": "NODE_0080",
+      "v": "NODE_0081",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00153_rev",
+      "u": "NODE_0081",
+      "v": "NODE_0080",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00154",
+      "u": "NODE_0080",
+      "v": "NODE_0092",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00154_rev",
+      "u": "NODE_0092",
+      "v": "NODE_0080",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00155",
+      "u": "NODE_0081",
+      "v": "NODE_0082",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00155_rev",
+      "u": "NODE_0082",
+      "v": "NODE_0081",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00156",
+      "u": "NODE_0081",
+      "v": "NODE_0093",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00156_rev",
+      "u": "NODE_0093",
+      "v": "NODE_0081",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00157",
+      "u": "NODE_0082",
+      "v": "NODE_0083",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00157_rev",
+      "u": "NODE_0083",
+      "v": "NODE_0082",
+      "distance_km": 1.5761,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00158",
+      "u": "NODE_0082",
+      "v": "NODE_0094",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00158_rev",
+      "u": "NODE_0094",
+      "v": "NODE_0082",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00159",
+      "u": "NODE_0083",
+      "v": "NODE_0084",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00159_rev",
+      "u": "NODE_0084",
+      "v": "NODE_0083",
+      "distance_km": 1.576,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00160",
+      "u": "NODE_0083",
+      "v": "NODE_0095",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00160_rev",
+      "u": "NODE_0095",
+      "v": "NODE_0083",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00161",
+      "u": "NODE_0084",
+      "v": "NODE_0096",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00161_rev",
+      "u": "NODE_0096",
+      "v": "NODE_0084",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00162",
+      "u": "NODE_0085",
+      "v": "NODE_0086",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00162_rev",
+      "u": "NODE_0086",
+      "v": "NODE_0085",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00163",
+      "u": "NODE_0085",
+      "v": "NODE_0097",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00163_rev",
+      "u": "NODE_0097",
+      "v": "NODE_0085",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00164",
+      "u": "NODE_0086",
+      "v": "NODE_0087",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00164_rev",
+      "u": "NODE_0087",
+      "v": "NODE_0086",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00165",
+      "u": "NODE_0086",
+      "v": "NODE_0098",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00165_rev",
+      "u": "NODE_0098",
+      "v": "NODE_0086",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00166",
+      "u": "NODE_0087",
+      "v": "NODE_0088",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00166_rev",
+      "u": "NODE_0088",
+      "v": "NODE_0087",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00167",
+      "u": "NODE_0087",
+      "v": "NODE_0099",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00167_rev",
+      "u": "NODE_0099",
+      "v": "NODE_0087",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00168",
+      "u": "NODE_0088",
+      "v": "NODE_0089",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00168_rev",
+      "u": "NODE_0089",
+      "v": "NODE_0088",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00169",
+      "u": "NODE_0088",
+      "v": "NODE_0100",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00169_rev",
+      "u": "NODE_0100",
+      "v": "NODE_0088",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00170",
+      "u": "NODE_0089",
+      "v": "NODE_0090",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00170_rev",
+      "u": "NODE_0090",
+      "v": "NODE_0089",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00171",
+      "u": "NODE_0089",
+      "v": "NODE_0101",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00171_rev",
+      "u": "NODE_0101",
+      "v": "NODE_0089",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00172",
+      "u": "NODE_0090",
+      "v": "NODE_0091",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00172_rev",
+      "u": "NODE_0091",
+      "v": "NODE_0090",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00173",
+      "u": "NODE_0090",
+      "v": "NODE_0102",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00173_rev",
+      "u": "NODE_0102",
+      "v": "NODE_0090",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00174",
+      "u": "NODE_0091",
+      "v": "NODE_0092",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00174_rev",
+      "u": "NODE_0092",
+      "v": "NODE_0091",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00175",
+      "u": "NODE_0091",
+      "v": "NODE_0103",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00175_rev",
+      "u": "NODE_0103",
+      "v": "NODE_0091",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00176",
+      "u": "NODE_0092",
+      "v": "NODE_0093",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00176_rev",
+      "u": "NODE_0093",
+      "v": "NODE_0092",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00177",
+      "u": "NODE_0092",
+      "v": "NODE_0104",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00177_rev",
+      "u": "NODE_0104",
+      "v": "NODE_0092",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00178",
+      "u": "NODE_0093",
+      "v": "NODE_0094",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00178_rev",
+      "u": "NODE_0094",
+      "v": "NODE_0093",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00179",
+      "u": "NODE_0093",
+      "v": "NODE_0105",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00179_rev",
+      "u": "NODE_0105",
+      "v": "NODE_0093",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00180",
+      "u": "NODE_0094",
+      "v": "NODE_0095",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00180_rev",
+      "u": "NODE_0095",
+      "v": "NODE_0094",
+      "distance_km": 1.576,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00181",
+      "u": "NODE_0094",
+      "v": "NODE_0106",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00181_rev",
+      "u": "NODE_0106",
+      "v": "NODE_0094",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00182",
+      "u": "NODE_0095",
+      "v": "NODE_0096",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00182_rev",
+      "u": "NODE_0096",
+      "v": "NODE_0095",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00183",
+      "u": "NODE_0095",
+      "v": "NODE_0107",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00183_rev",
+      "u": "NODE_0107",
+      "v": "NODE_0095",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00184",
+      "u": "NODE_0096",
+      "v": "NODE_0108",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00184_rev",
+      "u": "NODE_0108",
+      "v": "NODE_0096",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00185",
+      "u": "NODE_0097",
+      "v": "NODE_0098",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00185_rev",
+      "u": "NODE_0098",
+      "v": "NODE_0097",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00186",
+      "u": "NODE_0097",
+      "v": "NODE_0109",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00186_rev",
+      "u": "NODE_0109",
+      "v": "NODE_0097",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00187",
+      "u": "NODE_0098",
+      "v": "NODE_0099",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00187_rev",
+      "u": "NODE_0099",
+      "v": "NODE_0098",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00188",
+      "u": "NODE_0098",
+      "v": "NODE_0110",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00188_rev",
+      "u": "NODE_0110",
+      "v": "NODE_0098",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00189",
+      "u": "NODE_0099",
+      "v": "NODE_0100",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00189_rev",
+      "u": "NODE_0100",
+      "v": "NODE_0099",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00190",
+      "u": "NODE_0099",
+      "v": "NODE_0111",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00190_rev",
+      "u": "NODE_0111",
+      "v": "NODE_0099",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00191",
+      "u": "NODE_0100",
+      "v": "NODE_0101",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00191_rev",
+      "u": "NODE_0101",
+      "v": "NODE_0100",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00192",
+      "u": "NODE_0100",
+      "v": "NODE_0112",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00192_rev",
+      "u": "NODE_0112",
+      "v": "NODE_0100",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00193",
+      "u": "NODE_0101",
+      "v": "NODE_0102",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00193_rev",
+      "u": "NODE_0102",
+      "v": "NODE_0101",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00194",
+      "u": "NODE_0101",
+      "v": "NODE_0113",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00194_rev",
+      "u": "NODE_0113",
+      "v": "NODE_0101",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00195",
+      "u": "NODE_0102",
+      "v": "NODE_0103",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00195_rev",
+      "u": "NODE_0103",
+      "v": "NODE_0102",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00196",
+      "u": "NODE_0102",
+      "v": "NODE_0114",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00196_rev",
+      "u": "NODE_0114",
+      "v": "NODE_0102",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00197",
+      "u": "NODE_0103",
+      "v": "NODE_0104",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00197_rev",
+      "u": "NODE_0104",
+      "v": "NODE_0103",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00198",
+      "u": "NODE_0103",
+      "v": "NODE_0115",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00198_rev",
+      "u": "NODE_0115",
+      "v": "NODE_0103",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00199",
+      "u": "NODE_0104",
+      "v": "NODE_0105",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00199_rev",
+      "u": "NODE_0105",
+      "v": "NODE_0104",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00200",
+      "u": "NODE_0104",
+      "v": "NODE_0116",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00200_rev",
+      "u": "NODE_0116",
+      "v": "NODE_0104",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00201",
+      "u": "NODE_0105",
+      "v": "NODE_0106",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00201_rev",
+      "u": "NODE_0106",
+      "v": "NODE_0105",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00202",
+      "u": "NODE_0105",
+      "v": "NODE_0117",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00202_rev",
+      "u": "NODE_0117",
+      "v": "NODE_0105",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00203",
+      "u": "NODE_0106",
+      "v": "NODE_0107",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00203_rev",
+      "u": "NODE_0107",
+      "v": "NODE_0106",
+      "distance_km": 1.5759,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00204",
+      "u": "NODE_0106",
+      "v": "NODE_0118",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00204_rev",
+      "u": "NODE_0118",
+      "v": "NODE_0106",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00205",
+      "u": "NODE_0107",
+      "v": "NODE_0108",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00205_rev",
+      "u": "NODE_0108",
+      "v": "NODE_0107",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00206",
+      "u": "NODE_0107",
+      "v": "NODE_0119",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00206_rev",
+      "u": "NODE_0119",
+      "v": "NODE_0107",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00207",
+      "u": "NODE_0108",
+      "v": "NODE_0120",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00207_rev",
+      "u": "NODE_0120",
+      "v": "NODE_0108",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00208",
+      "u": "NODE_0109",
+      "v": "NODE_0110",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00208_rev",
+      "u": "NODE_0110",
+      "v": "NODE_0109",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00209",
+      "u": "NODE_0109",
+      "v": "NODE_0121",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00209_rev",
+      "u": "NODE_0121",
+      "v": "NODE_0109",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00210",
+      "u": "NODE_0110",
+      "v": "NODE_0111",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00210_rev",
+      "u": "NODE_0111",
+      "v": "NODE_0110",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00211",
+      "u": "NODE_0110",
+      "v": "NODE_0122",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00211_rev",
+      "u": "NODE_0122",
+      "v": "NODE_0110",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00212",
+      "u": "NODE_0111",
+      "v": "NODE_0112",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00212_rev",
+      "u": "NODE_0112",
+      "v": "NODE_0111",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00213",
+      "u": "NODE_0111",
+      "v": "NODE_0123",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00213_rev",
+      "u": "NODE_0123",
+      "v": "NODE_0111",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00214",
+      "u": "NODE_0112",
+      "v": "NODE_0113",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00214_rev",
+      "u": "NODE_0113",
+      "v": "NODE_0112",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00215",
+      "u": "NODE_0112",
+      "v": "NODE_0124",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00215_rev",
+      "u": "NODE_0124",
+      "v": "NODE_0112",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00216",
+      "u": "NODE_0113",
+      "v": "NODE_0114",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00216_rev",
+      "u": "NODE_0114",
+      "v": "NODE_0113",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00217",
+      "u": "NODE_0113",
+      "v": "NODE_0125",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00217_rev",
+      "u": "NODE_0125",
+      "v": "NODE_0113",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00218",
+      "u": "NODE_0114",
+      "v": "NODE_0115",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00218_rev",
+      "u": "NODE_0115",
+      "v": "NODE_0114",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00219",
+      "u": "NODE_0114",
+      "v": "NODE_0126",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00219_rev",
+      "u": "NODE_0126",
+      "v": "NODE_0114",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00220",
+      "u": "NODE_0115",
+      "v": "NODE_0116",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00220_rev",
+      "u": "NODE_0116",
+      "v": "NODE_0115",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00221",
+      "u": "NODE_0115",
+      "v": "NODE_0127",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00221_rev",
+      "u": "NODE_0127",
+      "v": "NODE_0115",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00222",
+      "u": "NODE_0116",
+      "v": "NODE_0117",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00222_rev",
+      "u": "NODE_0117",
+      "v": "NODE_0116",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00223",
+      "u": "NODE_0116",
+      "v": "NODE_0128",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00223_rev",
+      "u": "NODE_0128",
+      "v": "NODE_0116",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00224",
+      "u": "NODE_0117",
+      "v": "NODE_0118",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00224_rev",
+      "u": "NODE_0118",
+      "v": "NODE_0117",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00225",
+      "u": "NODE_0117",
+      "v": "NODE_0129",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00225_rev",
+      "u": "NODE_0129",
+      "v": "NODE_0117",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00226",
+      "u": "NODE_0118",
+      "v": "NODE_0119",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00226_rev",
+      "u": "NODE_0119",
+      "v": "NODE_0118",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00227",
+      "u": "NODE_0118",
+      "v": "NODE_0130",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00227_rev",
+      "u": "NODE_0130",
+      "v": "NODE_0118",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00228",
+      "u": "NODE_0119",
+      "v": "NODE_0120",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00228_rev",
+      "u": "NODE_0120",
+      "v": "NODE_0119",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00229",
+      "u": "NODE_0119",
+      "v": "NODE_0131",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00229_rev",
+      "u": "NODE_0131",
+      "v": "NODE_0119",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00230",
+      "u": "NODE_0120",
+      "v": "NODE_0132",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00230_rev",
+      "u": "NODE_0132",
+      "v": "NODE_0120",
+      "distance_km": 1.5164,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00231",
+      "u": "NODE_0121",
+      "v": "NODE_0122",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00231_rev",
+      "u": "NODE_0122",
+      "v": "NODE_0121",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00232",
+      "u": "NODE_0121",
+      "v": "NODE_0133",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00232_rev",
+      "u": "NODE_0133",
+      "v": "NODE_0121",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00233",
+      "u": "NODE_0122",
+      "v": "NODE_0123",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00233_rev",
+      "u": "NODE_0123",
+      "v": "NODE_0122",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00234",
+      "u": "NODE_0122",
+      "v": "NODE_0134",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00234_rev",
+      "u": "NODE_0134",
+      "v": "NODE_0122",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00235",
+      "u": "NODE_0123",
+      "v": "NODE_0124",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00235_rev",
+      "u": "NODE_0124",
+      "v": "NODE_0123",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00236",
+      "u": "NODE_0123",
+      "v": "NODE_0135",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00236_rev",
+      "u": "NODE_0135",
+      "v": "NODE_0123",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00237",
+      "u": "NODE_0124",
+      "v": "NODE_0125",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00237_rev",
+      "u": "NODE_0125",
+      "v": "NODE_0124",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00238",
+      "u": "NODE_0124",
+      "v": "NODE_0136",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00238_rev",
+      "u": "NODE_0136",
+      "v": "NODE_0124",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00239",
+      "u": "NODE_0125",
+      "v": "NODE_0126",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00239_rev",
+      "u": "NODE_0126",
+      "v": "NODE_0125",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00240",
+      "u": "NODE_0125",
+      "v": "NODE_0137",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00240_rev",
+      "u": "NODE_0137",
+      "v": "NODE_0125",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00241",
+      "u": "NODE_0126",
+      "v": "NODE_0127",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00241_rev",
+      "u": "NODE_0127",
+      "v": "NODE_0126",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00242",
+      "u": "NODE_0126",
+      "v": "NODE_0138",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00242_rev",
+      "u": "NODE_0138",
+      "v": "NODE_0126",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00243",
+      "u": "NODE_0127",
+      "v": "NODE_0128",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00243_rev",
+      "u": "NODE_0128",
+      "v": "NODE_0127",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00244",
+      "u": "NODE_0127",
+      "v": "NODE_0139",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00244_rev",
+      "u": "NODE_0139",
+      "v": "NODE_0127",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00245",
+      "u": "NODE_0128",
+      "v": "NODE_0129",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00245_rev",
+      "u": "NODE_0129",
+      "v": "NODE_0128",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00246",
+      "u": "NODE_0128",
+      "v": "NODE_0140",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00246_rev",
+      "u": "NODE_0140",
+      "v": "NODE_0128",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00247",
+      "u": "NODE_0129",
+      "v": "NODE_0130",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00247_rev",
+      "u": "NODE_0130",
+      "v": "NODE_0129",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00248",
+      "u": "NODE_0129",
+      "v": "NODE_0141",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00248_rev",
+      "u": "NODE_0141",
+      "v": "NODE_0129",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 50.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00249",
+      "u": "NODE_0130",
+      "v": "NODE_0131",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00249_rev",
+      "u": "NODE_0131",
+      "v": "NODE_0130",
+      "distance_km": 1.5758,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00250",
+      "u": "NODE_0130",
+      "v": "NODE_0142",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00250_rev",
+      "u": "NODE_0142",
+      "v": "NODE_0130",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00251",
+      "u": "NODE_0131",
+      "v": "NODE_0132",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00251_rev",
+      "u": "NODE_0132",
+      "v": "NODE_0131",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00252",
+      "u": "NODE_0131",
+      "v": "NODE_0143",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00252_rev",
+      "u": "NODE_0143",
+      "v": "NODE_0131",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 35.0,
+      "road_type": "secondary",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00253",
+      "u": "NODE_0132",
+      "v": "NODE_0144",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00253_rev",
+      "u": "NODE_0144",
+      "v": "NODE_0132",
+      "distance_km": 1.5163,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00254",
+      "u": "NODE_0133",
+      "v": "NODE_0134",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00254_rev",
+      "u": "NODE_0134",
+      "v": "NODE_0133",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00255",
+      "u": "NODE_0134",
+      "v": "NODE_0135",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00255_rev",
+      "u": "NODE_0135",
+      "v": "NODE_0134",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00256",
+      "u": "NODE_0135",
+      "v": "NODE_0136",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00256_rev",
+      "u": "NODE_0136",
+      "v": "NODE_0135",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00257",
+      "u": "NODE_0136",
+      "v": "NODE_0137",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00257_rev",
+      "u": "NODE_0137",
+      "v": "NODE_0136",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00258",
+      "u": "NODE_0137",
+      "v": "NODE_0138",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00258_rev",
+      "u": "NODE_0138",
+      "v": "NODE_0137",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00259",
+      "u": "NODE_0138",
+      "v": "NODE_0139",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00259_rev",
+      "u": "NODE_0139",
+      "v": "NODE_0138",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00260",
+      "u": "NODE_0139",
+      "v": "NODE_0140",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00260_rev",
+      "u": "NODE_0140",
+      "v": "NODE_0139",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00261",
+      "u": "NODE_0140",
+      "v": "NODE_0141",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00261_rev",
+      "u": "NODE_0141",
+      "v": "NODE_0140",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00262",
+      "u": "NODE_0141",
+      "v": "NODE_0142",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00262_rev",
+      "u": "NODE_0142",
+      "v": "NODE_0141",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00263",
+      "u": "NODE_0142",
+      "v": "NODE_0143",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00263_rev",
+      "u": "NODE_0143",
+      "v": "NODE_0142",
+      "distance_km": 1.5757,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00264",
+      "u": "NODE_0143",
+      "v": "NODE_0144",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00264_rev",
+      "u": "NODE_0144",
+      "v": "NODE_0143",
+      "distance_km": 1.5756,
+      "base_speed_kmh": 25.0,
+      "road_type": "local",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00265",
+      "u": "NODE_0066",
+      "v": "NODE_0044",
+      "distance_km": 4.3743,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00265_rev",
+      "u": "NODE_0044",
+      "v": "NODE_0066",
+      "distance_km": 4.3743,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00266",
+      "u": "NODE_0066",
+      "v": "NODE_0101",
+      "distance_km": 4.8141,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00266_rev",
+      "u": "NODE_0101",
+      "v": "NODE_0066",
+      "distance_km": 4.8141,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00267",
+      "u": "NODE_0066",
+      "v": "NODE_0058",
+      "distance_km": 6.4845,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00267_rev",
+      "u": "NODE_0058",
+      "v": "NODE_0066",
+      "distance_km": 6.4845,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00268",
+      "u": "NODE_0044",
+      "v": "NODE_0101",
+      "distance_km": 8.9351,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00268_rev",
+      "u": "NODE_0101",
+      "v": "NODE_0044",
+      "distance_km": 8.9351,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00269",
+      "u": "NODE_0044",
+      "v": "NODE_0058",
+      "distance_km": 3.4982,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00269_rev",
+      "u": "NODE_0058",
+      "v": "NODE_0044",
+      "distance_km": 3.4982,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00270",
+      "u": "NODE_0101",
+      "v": "NODE_0058",
+      "distance_km": 9.9441,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    },
+    {
+      "edge_id": "EDGE_00270_rev",
+      "u": "NODE_0058",
+      "v": "NODE_0101",
+      "distance_km": 9.9441,
+      "base_speed_kmh": 55.0,
+      "road_type": "arterial",
+      "traffic_level": "LOW"
+    }
+  ]
+}

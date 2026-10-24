@@ -1,0 +1,498 @@
+{
+  "total_distance_km": 238.219,
+  "total_delivery_time_min": 523.07,
+  "late_delivery_penalty": 378.36,
+  "freshness_penalty": 820.03,
+  "late_orders_count": 11,
+  "unserved_orders_count": 0,
+  "fitness_cost": 5216.44,
+  "tours": {
+    "RIDER_001": {
+      "rider_id": "RIDER_001",
+      "capacity": 2,
+      "stops": [
+        {
+          "node_id": "R_RIDER_001",
+          "task_type": "rider_start",
+          "order_id": null,
+          "lat": 12.932843,
+          "lon": 77.609647,
+          "ready_time_min": 0.0,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0004",
+          "task_type": "pickup",
+          "order_id": "ORD_0004",
+          "lat": 13.011389,
+          "lon": 77.580339,
+          "ready_time_min": 18.65,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0004",
+          "task_type": "dropoff",
+          "order_id": "ORD_0004",
+          "lat": 12.980381,
+          "lon": 77.674068,
+          "ready_time_min": 7.65,
+          "deadline_min": 42.65
+        },
+        {
+          "node_id": "P_ORD_0001",
+          "task_type": "pickup",
+          "order_id": "ORD_0001",
+          "lat": 12.969387,
+          "lon": 77.605262,
+          "ready_time_min": 22.95,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0001",
+          "task_type": "dropoff",
+          "order_id": "ORD_0001",
+          "lat": 13.032372,
+          "lon": 77.602534,
+          "ready_time_min": 3.95,
+          "deadline_min": 43.95
+        },
+        {
+          "node_id": "P_ORD_0012",
+          "task_type": "pickup",
+          "order_id": "ORD_0012",
+          "lat": 13.017397,
+          "lon": 77.583899,
+          "ready_time_min": 41.45,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0012",
+          "task_type": "dropoff",
+          "order_id": "ORD_0012",
+          "lat": 13.001277,
+          "lon": 77.624987,
+          "ready_time_min": 12.45,
+          "deadline_min": 64.45
+        }
+      ],
+      "arrival_times": [
+        0.0,
+        19.03,
+        44.3,
+        66.17,
+        84.97,
+        99.8,
+        118.7
+      ],
+      "departure_times": [
+        0.0,
+        22.03,
+        47.3,
+        69.17,
+        87.97,
+        102.8,
+        121.7
+      ],
+      "loads": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "total_distance_km": 61.413,
+      "total_time_min": 121.7,
+      "orders_delivered": [
+        "ORD_0004",
+        "ORD_0001",
+        "ORD_0012"
+      ]
+    },
+    "RIDER_002": {
+      "rider_id": "RIDER_002",
+      "capacity": 2,
+      "stops": [
+        {
+          "node_id": "R_RIDER_002",
+          "task_type": "rider_start",
+          "order_id": null,
+          "lat": 12.96592,
+          "lon": 77.60341,
+          "ready_time_min": 0.0,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0006",
+          "task_type": "pickup",
+          "order_id": "ORD_0006",
+          "lat": 13.00294,
+          "lon": 77.578068,
+          "ready_time_min": 24.98,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0015",
+          "task_type": "pickup",
+          "order_id": "ORD_0015",
+          "lat": 13.011389,
+          "lon": 77.580339,
+          "ready_time_min": 27.43,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0006",
+          "task_type": "dropoff",
+          "order_id": "ORD_0006",
+          "lat": 12.922795,
+          "lon": 77.669681,
+          "ready_time_min": 8.98,
+          "deadline_min": 56.98
+        },
+        {
+          "node_id": "D_ORD_0015",
+          "task_type": "dropoff",
+          "order_id": "ORD_0015",
+          "lat": 12.960196,
+          "lon": 77.574212,
+          "ready_time_min": 17.43,
+          "deadline_min": 70.43
+        },
+        {
+          "node_id": "P_ORD_0010",
+          "task_type": "pickup",
+          "order_id": "ORD_0010",
+          "lat": 12.967941,
+          "lon": 77.606242,
+          "ready_time_min": 32.58,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0010",
+          "task_type": "dropoff",
+          "order_id": "ORD_0010",
+          "lat": 12.986999,
+          "lon": 77.543423,
+          "ready_time_min": 11.58,
+          "deadline_min": 53.58
+        }
+      ],
+      "arrival_times": [
+        0.0,
+        12.55,
+        31.07,
+        55.08,
+        78.94,
+        90.95,
+        110.23
+      ],
+      "departure_times": [
+        0.0,
+        27.98,
+        34.07,
+        58.08,
+        81.94,
+        93.95,
+        113.23
+      ],
+      "loads": [
+        0,
+        1,
+        2,
+        1,
+        0,
+        1,
+        0
+      ],
+      "total_distance_km": 52.42,
+      "total_time_min": 113.23,
+      "orders_delivered": [
+        "ORD_0006",
+        "ORD_0015",
+        "ORD_0010"
+      ]
+    },
+    "RIDER_003": {
+      "rider_id": "RIDER_003",
+      "capacity": 4,
+      "stops": [
+        {
+          "node_id": "R_RIDER_003",
+          "task_type": "rider_start",
+          "order_id": null,
+          "lat": 12.928247,
+          "lon": 77.617921,
+          "ready_time_min": 0.0,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0003",
+          "task_type": "pickup",
+          "order_id": "ORD_0003",
+          "lat": 12.971145,
+          "lon": 77.652751,
+          "ready_time_min": 20.15,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0003",
+          "task_type": "dropoff",
+          "order_id": "ORD_0003",
+          "lat": 12.923293,
+          "lon": 77.603889,
+          "ready_time_min": 7.15,
+          "deadline_min": 43.15
+        },
+        {
+          "node_id": "P_ORD_0014",
+          "task_type": "pickup",
+          "order_id": "ORD_0014",
+          "lat": 12.969387,
+          "lon": 77.605262,
+          "ready_time_min": 37.85,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0014",
+          "task_type": "dropoff",
+          "order_id": "ORD_0014",
+          "lat": 12.903432,
+          "lon": 77.616854,
+          "ready_time_min": 15.85,
+          "deadline_min": 60.85
+        },
+        {
+          "node_id": "P_ORD_0007",
+          "task_type": "pickup",
+          "order_id": "ORD_0007",
+          "lat": 12.929633,
+          "lon": 77.619773,
+          "ready_time_min": 38.269999999999996,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0007",
+          "task_type": "dropoff",
+          "order_id": "ORD_0007",
+          "lat": 12.936673,
+          "lon": 77.662944,
+          "ready_time_min": 10.27,
+          "deadline_min": 79.27
+        },
+        {
+          "node_id": "P_ORD_0011",
+          "task_type": "pickup",
+          "order_id": "ORD_0011",
+          "lat": 12.977591,
+          "lon": 77.596911,
+          "ready_time_min": 35.32,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0011",
+          "task_type": "dropoff",
+          "order_id": "ORD_0011",
+          "lat": 12.912605,
+          "lon": 77.597551,
+          "ready_time_min": 12.32,
+          "deadline_min": 72.32
+        }
+      ],
+      "arrival_times": [
+        0.0,
+        13.56,
+        39.83,
+        53.12,
+        74.56,
+        87.85,
+        104.22,
+        126.01,
+        148.16
+      ],
+      "departure_times": [
+        0.0,
+        23.15,
+        42.83,
+        56.12,
+        77.56,
+        90.85,
+        107.22,
+        129.01,
+        151.16
+      ],
+      "loads": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "total_distance_km": 67.254,
+      "total_time_min": 151.16,
+      "orders_delivered": [
+        "ORD_0003",
+        "ORD_0014",
+        "ORD_0007",
+        "ORD_0011"
+      ]
+    },
+    "RIDER_004": {
+      "rider_id": "RIDER_004",
+      "capacity": 3,
+      "stops": [
+        {
+          "node_id": "R_RIDER_004",
+          "task_type": "rider_start",
+          "order_id": null,
+          "lat": 12.940691,
+          "lon": 77.635234,
+          "ready_time_min": 0.0,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0005",
+          "task_type": "pickup",
+          "order_id": "ORD_0005",
+          "lat": 13.009151,
+          "lon": 77.5798,
+          "ready_time_min": 18.18,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0009",
+          "task_type": "pickup",
+          "order_id": "ORD_0009",
+          "lat": 13.011389,
+          "lon": 77.580339,
+          "ready_time_min": 24.5,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "P_ORD_0002",
+          "task_type": "pickup",
+          "order_id": "ORD_0002",
+          "lat": 13.00294,
+          "lon": 77.578068,
+          "ready_time_min": 23.33,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0005",
+          "task_type": "dropoff",
+          "order_id": "ORD_0005",
+          "lat": 12.966032,
+          "lon": 77.575391,
+          "ready_time_min": 8.18,
+          "deadline_min": 48.18
+        },
+        {
+          "node_id": "D_ORD_0002",
+          "task_type": "dropoff",
+          "order_id": "ORD_0002",
+          "lat": 12.931736,
+          "lon": 77.599162,
+          "ready_time_min": 5.33,
+          "deadline_min": 57.33
+        },
+        {
+          "node_id": "D_ORD_0009",
+          "task_type": "dropoff",
+          "order_id": "ORD_0009",
+          "lat": 12.912656,
+          "lon": 77.59715,
+          "ready_time_min": 11.5,
+          "deadline_min": 60.5
+        },
+        {
+          "node_id": "P_ORD_0013",
+          "task_type": "pickup",
+          "order_id": "ORD_0013",
+          "lat": 12.929875,
+          "lon": 77.616883,
+          "ready_time_min": 38.13,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0013",
+          "task_type": "dropoff",
+          "order_id": "ORD_0013",
+          "lat": 12.938251,
+          "lon": 77.591411,
+          "ready_time_min": 15.13,
+          "deadline_min": 67.13
+        },
+        {
+          "node_id": "P_ORD_0008",
+          "task_type": "pickup",
+          "order_id": "ORD_0008",
+          "lat": 12.975519,
+          "lon": 77.609046,
+          "ready_time_min": 34.42,
+          "deadline_min": Infinity
+        },
+        {
+          "node_id": "D_ORD_0008",
+          "task_type": "dropoff",
+          "order_id": "ORD_0008",
+          "lat": 12.930639,
+          "lon": 77.634591,
+          "ready_time_min": 10.42,
+          "deadline_min": 70.42
+        }
+      ],
+      "arrival_times": [
+        0.0,
+        14.43,
+        22.75,
+        30.59,
+        42.26,
+        57.14,
+        67.83,
+        83.17,
+        98.02,
+        114.91,
+        133.98
+      ],
+      "departure_times": [
+        0.0,
+        21.18,
+        27.5,
+        33.59,
+        45.26,
+        60.14,
+        70.83,
+        86.17,
+        101.02,
+        117.91,
+        136.98
+      ],
+      "loads": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "total_distance_km": 57.132,
+      "total_time_min": 136.98,
+      "orders_delivered": [
+        "ORD_0005",
+        "ORD_0002",
+        "ORD_0009",
+        "ORD_0013",
+        "ORD_0008"
+      ]
+    }
+  }
+}
