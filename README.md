@@ -9,10 +9,6 @@ To model, simulate, and optimize urban food delivery operations by deploying a d
 ## Bio-Inspired Algorithm
 - **Ant Colony Optimization (ACO)**: Metaheuristic utilized for combinatorial path and schedule optimization on dynamic road graphs, featuring pheromone update rules, distance and traffic-based heuristics, and constraint handling.
 
-## Current Status
-- **Phase 0**: Project Foundation & Initial Setup
-- No algorithms, datasets, or backend/frontend implementations have been executed or populated yet.
-
 ## Development Approach
 The project follows a phased development roadmap:
 - **Phase 1**: Project foundation and synthetic data
