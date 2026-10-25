@@ -233,27 +233,5 @@ def generate_synthetic_road_network(
                 )
                 edge_counter += 1
 
-    # 3. Add Diagonal / Express Arterials connecting Key Commercial Hubs
-    hub_nodes = [graph.find_nearest_node(hub.lat, hub.lon) for hub in cfg.commercial_hubs]
-    for i in range(len(hub_nodes)):
-        for j in range(i + 1, len(hub_nodes)):
-            u_id = hub_nodes[i]
-            v_id = hub_nodes[j]
-            if u_id != v_id and (u_id, v_id) not in graph._edge_lookup:
-                u_node = graph.nodes[u_id]
-                v_node = graph.nodes[v_id]
-                dist = haversine_distance_km(u_node.lat, u_node.lon, v_node.lat, v_node.lon)
-                graph.add_edge(
-                    RoadEdge(
-                        edge_id=f"EDGE_{edge_counter:05d}",
-                        u=u_id,
-                        v=v_id,
-                        distance_km=dist,
-                        base_speed_kmh=55.0,  # Express avenue connecting hubs
-                        road_type="arterial",
-                    ),
-                    bidirectional=True,
-                )
-                edge_counter += 1
-
+    # Retain strictly orthogonal (North-South and East-West) road segments
     return graph

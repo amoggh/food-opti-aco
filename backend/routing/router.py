@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from backend.routing.graph import RoadEdge, RoadGraph, haversine_distance_km
+from backend.routing.osm_router import OSMRouter
 from backend.routing.traffic import TrafficModel
 
 
@@ -22,9 +23,20 @@ class RouteResult:
 class RoutingEngine:
     """Graph routing engine computing optimal routes and travel matrices for delivery optimization."""
 
-    def __init__(self, graph: RoadGraph, traffic_model: Optional[TrafficModel] = None):
+    def __init__(
+        self,
+        graph: RoadGraph,
+        traffic_model: Optional[TrafficModel] = None,
+        osm_router: Optional[OSMRouter] = None,
+    ):
         self.graph = graph
         self.traffic_model = traffic_model or TrafficModel()
+        self.osm_router = osm_router or OSMRouter()
+        self._route_cache: Dict[Tuple[str, str, str], RouteResult] = {}
+
+    def clear_cache(self) -> None:
+        """Clears the route cache when road conditions, traffic, or topologies change."""
+        self._route_cache.clear()
 
     def _get_edge_weight(
         self, edge: RoadEdge, criterion: str, current_time_min: float
@@ -54,9 +66,14 @@ class RoutingEngine:
         if end_node not in self.graph.nodes:
             raise ValueError(f"End node '{end_node}' does not exist in the road graph.")
 
+        traffic_state = tuple(sorted(self.traffic_model._edge_traffic.items())) if self.traffic_model else ()
+        cache_key = (start_node, end_node, criterion, traffic_state)
+        if cache_key in self._route_cache:
+            return self._route_cache[cache_key]
+
         if start_node == end_node:
             node = self.graph.nodes[start_node]
-            return RouteResult(
+            res = RouteResult(
                 start_node=start_node,
                 end_node=end_node,
                 path_nodes=[start_node],
@@ -64,6 +81,8 @@ class RoutingEngine:
                 total_distance_km=0.0,
                 total_time_minutes=0.0,
             )
+            self._route_cache[cache_key] = res
+            return res
 
         # Dijkstra priority queue: (cost, current_node_id, elapsed_time_min)
         pq = [(0.0, start_node, departure_time_min)]
@@ -118,7 +137,7 @@ class RoutingEngine:
                 e.distance_km, e.base_speed_kmh, e.edge_id, departure_time_min + elapsed
             )
 
-        return RouteResult(
+        res = RouteResult(
             start_node=start_node,
             end_node=end_node,
             path_nodes=path_nodes,
@@ -126,6 +145,8 @@ class RoutingEngine:
             total_distance_km=round(total_dist, 4),
             total_time_minutes=round(elapsed, 4),
         )
+        self._route_cache[cache_key] = res
+        return res
 
     def find_route_between_coordinates(
         self,
@@ -135,8 +156,43 @@ class RoutingEngine:
         end_lon: float,
         criterion: str = "time",
         departure_time_min: float = 0.0,
+        use_real_roads: bool = False,
     ) -> RouteResult:
-        """Snaps arbitrary start and end coordinates to the nearest graph nodes and computes route."""
+        """
+        Computes the route between arbitrary coordinates.
+        Uses real-world OpenStreetMap road network geometry via OSMRouter for physical road following.
+        Falls back to graph Dijkstra with orthogonal snapping if real-road service is offline.
+        """
+        if use_real_roads and self.osm_router:
+            osm_coords, osm_dist, osm_time = self.osm_router.get_route(
+                start_lat, start_lon, end_lat, end_lon
+            )
+            if osm_coords and len(osm_coords) >= 2:
+                # Apply dynamic traffic speed multiplier if traffic conditions exist
+                speed_mult = self.traffic_model.get_speed_multiplier(self.traffic_model.default_level)
+                adjusted_time = round(osm_time / max(0.1, speed_mult), 4)
+
+                start_node = (
+                    self.graph.find_nearest_node(start_lat, start_lon)
+                    if self.graph and self.graph.nodes
+                    else "osm_start"
+                )
+                end_node = (
+                    self.graph.find_nearest_node(end_lat, end_lon)
+                    if self.graph and self.graph.nodes
+                    else "osm_end"
+                )
+
+                return RouteResult(
+                    start_node=start_node,
+                    end_node=end_node,
+                    path_nodes=[start_node, end_node],
+                    path_coordinates=osm_coords,
+                    total_distance_km=osm_dist,
+                    total_time_minutes=adjusted_time,
+                )
+
+        # Snapped graph fallback
         start_node = self.graph.find_nearest_node(start_lat, start_lon)
         end_node = self.graph.find_nearest_node(end_lat, end_lon)
 
@@ -147,7 +203,7 @@ class RoutingEngine:
             departure_time_min=departure_time_min,
         )
 
-        # Include first-mile and last-mile connector distances (at default walking/local speed of 15 km/h)
+        # Include first-mile and last-mile connector distances
         first_mile_km = haversine_distance_km(
             start_lat, start_lon, self.graph.nodes[start_node].lat, self.graph.nodes[start_node].lon
         )
@@ -158,11 +214,19 @@ class RoutingEngine:
         access_speed_kmh = 20.0
         access_time_min = ((first_mile_km + last_mile_km) / access_speed_kmh) * 60.0
 
+        # Construct clean sequence of coordinates without duplicate adjacent points
+        coords: List[Tuple[float, float]] = [(start_lat, start_lon)]
+        for pt in route.path_coordinates:
+            if not coords or coords[-1] != pt:
+                coords.append(pt)
+        if not coords or coords[-1] != (end_lat, end_lon):
+            coords.append((end_lat, end_lon))
+
         return RouteResult(
             start_node=start_node,
             end_node=end_node,
             path_nodes=route.path_nodes,
-            path_coordinates=[(start_lat, start_lon)] + route.path_coordinates + [(end_lat, end_lon)],
+            path_coordinates=coords,
             total_distance_km=round(route.total_distance_km + first_mile_km + last_mile_km, 4),
             total_time_minutes=round(route.total_time_minutes + access_time_min, 4),
         )

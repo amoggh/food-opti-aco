@@ -134,7 +134,7 @@ class ACOEngine:
                 elif (u.node_id, v.node_id) not in self.distance_matrix:
                     if self.routing_engine:
                         route = self.routing_engine.find_route_between_coordinates(
-                            u.lat, u.lon, v.lat, v.lon, criterion="time"
+                            u.lat, u.lon, v.lat, v.lon, criterion="time", use_real_roads=False
                         )
                         dist = route.total_distance_km
                         ttime = route.total_time_minutes
@@ -226,6 +226,31 @@ class ACOEngine:
                     f"Late Orders={global_best_plan.late_orders_count}, "
                     f"Unserved={global_best_plan.unserved_orders_count}"
                 )
+
+        if global_best_plan and self.routing_engine:
+            for tour in global_best_plan.tours.values():
+                stops = [(s.lat, s.lon) for s in tour.stops]
+                if hasattr(self.routing_engine, "osm_router") and self.routing_engine.osm_router:
+                    coords, _, _ = self.routing_engine.osm_router.get_route_for_stops(stops)
+                    if coords and len(coords) >= 2:
+                        tour.road_path_coordinates = coords
+                        continue
+
+                coords = []
+                for idx in range(len(tour.stops) - 1):
+                    s1 = tour.stops[idx]
+                    s2 = tour.stops[idx + 1]
+                    res = self.routing_engine.find_route_between_coordinates(
+                        s1.lat, s1.lon, s2.lat, s2.lon, criterion="distance", use_real_roads=True
+                    )
+                    if res and res.path_coordinates:
+                        if coords and coords[-1] == res.path_coordinates[0]:
+                            coords.extend(res.path_coordinates[1:])
+                        else:
+                            coords.extend(res.path_coordinates)
+                    else:
+                        coords.extend([(s1.lat, s1.lon), (s2.lat, s2.lon)])
+                tour.road_path_coordinates = coords
 
         elapsed = time.time() - start_time
 

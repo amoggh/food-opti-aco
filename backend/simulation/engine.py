@@ -68,6 +68,7 @@ class SimRider:
     assigned_stops: List[ACOTaskNode] = field(default_factory=list)
     total_distance_km: float = 0.0
     orders_delivered: List[str] = field(default_factory=list)
+    road_path: List[List[float]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -89,6 +90,7 @@ class SimRider:
                 }
                 for s in self.assigned_stops
             ],
+            "road_path": self.road_path,
             "total_distance_km": round(self.total_distance_km, 3),
             "orders_delivered": list(self.orders_delivered),
         }
@@ -128,6 +130,7 @@ class SimulationEngine:
         self.event_history: List[SimEvent] = []
         self.active_plan: Optional[DeliveryPlan] = None
         self.last_reopt_time_min: float = 0.0
+        self.last_dispatch_time_min: float = 0.0
 
         self._load_environment()
 
@@ -173,6 +176,45 @@ class SimulationEngine:
                 current_lon=r.longitude,
             )
 
+        # Preload initial best plan if available
+        best_plan_path = self.processed_data_dir / "best_delivery_plan.json"
+        if best_plan_path.exists():
+            try:
+                import json
+                with open(best_plan_path, "r", encoding="utf-8") as f:
+                    plan_data = json.load(f)
+                if "tours" in plan_data:
+                    for r_id, tour_info in plan_data["tours"].items():
+                        if r_id in self.riders:
+                            rider = self.riders[r_id]
+                            stops = tour_info.get("stops", [])
+                            assigned = []
+                            for s in stops:
+                                if s.get("task_type") == "rider_start":
+                                    rider.current_lat = float(s.get("lat", rider.current_lat))
+                                    rider.current_lon = float(s.get("lon", rider.current_lon))
+                                else:
+                                    assigned.append(ACOTaskNode(
+                                        node_id=s["node_id"],
+                                        task_type=s["task_type"],
+                                        order_id=s.get("order_id"),
+                                        lat=float(s["lat"]),
+                                        lon=float(s["lon"]),
+                                        ready_time_min=float(s.get("ready_time_min", 0.0) or 0.0),
+                                        deadline_min=float(s.get("deadline_min", float("inf")) or float("inf")),
+                                    ))
+                            rider.assigned_stops = assigned
+                            rider.status = RiderStatus.BUSY if assigned else RiderStatus.AVAILABLE
+                            for s in assigned:
+                                if s.order_id and s.order_id in self.orders:
+                                    self.orders[s.order_id].assigned_rider_id = r_id
+                            if tour_info.get("road_path"):
+                                rider.road_path = tour_info["road_path"]
+                            else:
+                                self._update_rider_road_path(rider)
+            except Exception as e:
+                pass
+
     def start(self) -> None:
         self.is_running = True
 
@@ -187,7 +229,93 @@ class SimulationEngine:
         self.event_history.clear()
         self.active_plan = None
         self.last_reopt_time_min = 0.0
+        self.last_dispatch_time_min = 0.0
+        if self.router:
+            self.router.clear_cache()
         self._load_environment()
+
+    def _update_rider_road_path(self, rider: SimRider) -> None:
+        """Computes and sets the exact road network coordinate path for a rider's assigned stops."""
+        if not rider.assigned_stops:
+            rider.road_path = []
+            return
+
+        points_to_visit = [(rider.current_lat, rider.current_lon)] + [
+            (s.lat, s.lon) for s in rider.assigned_stops
+        ]
+
+        # Use OSMRouter for real physical road coordinates
+        if self.router and getattr(self.router, "osm_router", None):
+            coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
+            if coords and len(coords) >= 2:
+                rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in coords]
+                return
+
+        coords: List[List[float]] = []
+        for i in range(len(points_to_visit) - 1):
+            p1 = points_to_visit[i]
+            p2 = points_to_visit[i + 1]
+            if self.router:
+                route = self.router.find_route_between_coordinates(
+                    p1[0], p1[1], p2[0], p2[1], criterion="distance"
+                )
+                if route and route.path_coordinates:
+                    seg_pts = [[round(pt[0], 6), round(pt[1], 6)] for pt in route.path_coordinates]
+                else:
+                    seg_pts = [[round(p1[0], 6), round(p1[1], 6)], [round(p2[0], 6), round(p2[1], 6)]]
+            else:
+                seg_pts = [[round(p1[0], 6), round(p1[1], 6)], [round(p2[0], 6), round(p2[1], 6)]]
+
+            if not coords:
+                coords.extend(seg_pts)
+            else:
+                if coords[-1] == seg_pts[0]:
+                    coords.extend(seg_pts[1:])
+                else:
+                    coords.extend(seg_pts)
+
+        rider.road_path = coords
+
+    def _process_rider_stop_arrival(self, rider: SimRider) -> None:
+        """Handles arrival at a stop (pickup, dropoff, or rider_start) and updates route."""
+        if not rider.assigned_stops:
+            rider.road_path = []
+            return
+
+        target_stop = rider.assigned_stops[0]
+
+        if target_stop.task_type == "pickup":
+            oid = target_stop.order_id
+            order = self.orders.get(oid)
+            if order:
+                order.status = OrderStatus.PICKED_UP
+                order.picked_up_at_min = self.sim_time_min
+                order.assigned_rider_id = rider.rider_id
+                if oid not in rider.carried_orders:
+                    rider.carried_orders.append(oid)
+            rider.assigned_stops.pop(0)
+            if not rider.road_path or len(rider.road_path) < 2:
+                self._update_rider_road_path(rider)
+
+        elif target_stop.task_type == "dropoff":
+            oid = target_stop.order_id
+            order = self.orders.get(oid)
+            if order:
+                order.status = OrderStatus.DELIVERED
+                order.delivered_at_min = self.sim_time_min
+                order.is_late = self.sim_time_min > order.deadline_min
+                if oid in rider.carried_orders:
+                    rider.carried_orders.remove(oid)
+                if oid not in rider.orders_delivered:
+                    rider.orders_delivered.append(oid)
+            rider.assigned_stops.pop(0)
+            if not rider.road_path or len(rider.road_path) < 2:
+                self._update_rider_road_path(rider)
+
+        elif target_stop.task_type == "rider_start":
+            rider.assigned_stops.pop(0)
+            if not rider.road_path or len(rider.road_path) < 2:
+                self._update_rider_road_path(rider)
 
     def step(self, delta_time_min: Optional[float] = None) -> Dict[str, Any]:
         """Advances simulation by delta_time_min and updates rider/order progress."""
@@ -203,64 +331,107 @@ class SimulationEngine:
                 if self.sim_time_min >= order.ready_time_min:
                     order.status = OrderStatus.READY
 
-        # 2. Advance riders toward their next assigned stop
+        # 2. Advance riders along the road network toward their next assigned stops
         avg_speed_kmh = 35.0
 
         for rider in self.riders.values():
             if rider.status == RiderStatus.UNAVAILABLE or not rider.assigned_stops:
                 continue
 
-            target_stop = rider.assigned_stops[0]
-            dist_to_target = haversine_distance_km(
-                rider.current_lat, rider.current_lon, target_stop.lat, target_stop.lon
-            )
+            if not rider.road_path or len(rider.road_path) < 2:
+                self._update_rider_road_path(rider)
 
-            # Move distance in delta time
+            if not rider.road_path or len(rider.road_path) < 2:
+                target_stop = rider.assigned_stops[0]
+                rider.current_lat = target_stop.lat
+                rider.current_lon = target_stop.lon
+                self._process_rider_stop_arrival(rider)
+                continue
+
             speed = self.traffic_model.get_effective_speed(avg_speed_kmh)
             travel_dist = (speed / 60.0) * dt
 
-            if dist_to_target <= travel_dist:
-                # Rider reached target stop
-                rider.current_lat = target_stop.lat
-                rider.current_lon = target_stop.lon
-                rider.total_distance_km += dist_to_target
+            while travel_dist > 1e-6 and len(rider.road_path) >= 2:
+                next_pt = rider.road_path[1]
+                seg_dist = haversine_distance_km(
+                    rider.current_lat, rider.current_lon, next_pt[0], next_pt[1]
+                )
 
-                # Process stop action
-                if target_stop.task_type == "pickup":
-                    oid = target_stop.order_id
-                    order = self.orders.get(oid)
-                    # Rider picks up meal if ready
-                    if order and order.status in (OrderStatus.READY, OrderStatus.PREPARING):
-                        order.status = OrderStatus.PICKED_UP
-                        order.picked_up_at_min = self.sim_time_min
-                        order.assigned_rider_id = rider.rider_id
-                        rider.carried_orders.append(oid)
-                        rider.assigned_stops.pop(0)
+                if seg_dist <= travel_dist:
+                    travel_dist -= seg_dist
+                    rider.total_distance_km += seg_dist
+                    rider.current_lat = next_pt[0]
+                    rider.current_lon = next_pt[1]
+                    rider.road_path.pop(0)
+                    rider.road_path[0] = [rider.current_lat, rider.current_lon]
 
-                elif target_stop.task_type == "dropoff":
-                    oid = target_stop.order_id
-                    order = self.orders.get(oid)
-                    if order:
-                        order.status = OrderStatus.DELIVERED
-                        order.delivered_at_min = self.sim_time_min
-                        order.is_late = self.sim_time_min > order.deadline_min
-                        if oid in rider.carried_orders:
-                            rider.carried_orders.remove(oid)
-                        rider.orders_delivered.append(oid)
-                    rider.assigned_stops.pop(0)
+                    # Check if reached target stop
+                    if rider.assigned_stops:
+                        target_stop = rider.assigned_stops[0]
+                        dist_to_stop = haversine_distance_km(
+                            rider.current_lat, rider.current_lon, target_stop.lat, target_stop.lon
+                        )
+                        if dist_to_stop <= 0.08 or len(rider.road_path) <= 1:
+                            rider.current_lat = target_stop.lat
+                            rider.current_lon = target_stop.lon
+                            self._process_rider_stop_arrival(rider)
+                            break
+                else:
+                    if seg_dist > 1e-6:
+                        ratio = travel_dist / seg_dist
+                        rider.current_lat += (next_pt[0] - rider.current_lat) * ratio
+                        rider.current_lon += (next_pt[1] - rider.current_lon) * ratio
+                        rider.total_distance_km += travel_dist
+                        rider.road_path[0] = [round(rider.current_lat, 6), round(rider.current_lon, 6)]
+                        travel_dist = 0.0
 
-                elif target_stop.task_type == "rider_start":
-                    rider.assigned_stops.pop(0)
+                        if rider.assigned_stops:
+                            target_stop = rider.assigned_stops[0]
+                            dist_to_stop = haversine_distance_km(
+                                rider.current_lat, rider.current_lon, target_stop.lat, target_stop.lon
+                            )
+                            if dist_to_stop <= 0.05:
+                                rider.current_lat = target_stop.lat
+                                rider.current_lon = target_stop.lon
+                                self._process_rider_stop_arrival(rider)
+                    else:
+                        rider.road_path.pop(0)
 
-            else:
-                # Interpolate linear position along segment
-                ratio = travel_dist / dist_to_target
-                rider.current_lat += (target_stop.lat - rider.current_lat) * ratio
-                rider.current_lon += (target_stop.lon - rider.current_lon) * ratio
-                rider.total_distance_km += travel_dist
+            rider.status = RiderStatus.BUSY if (rider.assigned_stops or rider.carried_orders) else RiderStatus.AVAILABLE
 
-            # Update status
-            rider.status = RiderStatus.BUSY if rider.assigned_stops or rider.carried_orders else RiderStatus.AVAILABLE
+        # 3. Dynamic continuous dispatching for remaining unassigned orders
+        if self.is_running or self.active_plan is not None:
+            unassigned_orders = [
+                o for o in self.orders.values()
+                if o.assigned_rider_id is None
+                and o.status in (OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY)
+            ]
+
+            if unassigned_orders:
+                idle_riders = [
+                    r for r in self.riders.values()
+                    if r.status != RiderStatus.UNAVAILABLE and not r.assigned_stops and not r.carried_orders
+                ]
+
+                total_active = len([r for r in self.riders.values() if r.status != RiderStatus.UNAVAILABLE])
+                should_dispatch = False
+
+                if idle_riders:
+                    if len(idle_riders) >= 4:
+                        should_dispatch = True
+                    elif len(unassigned_orders) <= len(idle_riders):
+                        should_dispatch = True
+                    elif len(idle_riders) == total_active:
+                        should_dispatch = True
+                    elif (self.sim_time_min - self.last_dispatch_time_min) >= 8.0:
+                        should_dispatch = True
+
+                if should_dispatch:
+                    total_cap = sum(r.capacity for r in idle_riders)
+                    batch_size = min(len(unassigned_orders), total_cap)
+                    if batch_size > 0:
+                        batch = unassigned_orders[:batch_size]
+                        self.dispatch_batch(batch, idle_riders, aco_ants=8, aco_iterations=10)
 
         return self.get_snapshot()
 
@@ -283,7 +454,7 @@ class SimulationEngine:
 
         # Trigger dynamic re-optimization
         if event.requires_reoptimization:
-            self.reoptimize()
+            self.reoptimize(aco_ants=4, aco_iterations=4, max_orders=8)
 
         return {"event": event.to_dict(), "message": result_msg, "snapshot": self.get_snapshot()}
 
@@ -311,6 +482,8 @@ class SimulationEngine:
         edge_id = payload["edge_id"]
         level = TrafficLevel(payload["traffic_level"])
         self.traffic_model.set_edge_traffic(edge_id, level)
+        if self.router:
+            self.router.clear_cache()
         return f"Traffic on edge {edge_id} updated to {level.value}."
 
     def _handle_road_closure(self, payload: Dict[str, Any]) -> str:
@@ -318,6 +491,8 @@ class SimulationEngine:
         self.closed_edges.add(edge_id)
         # Severe slowdown effectively blocks traversal
         self.traffic_model.set_edge_traffic(edge_id, TrafficLevel.SEVERE)
+        if self.router:
+            self.router.clear_cache()
         return f"Road closure active on edge {edge_id}."
 
     def _handle_rider_unavailable(self, payload: Dict[str, Any]) -> str:
@@ -348,15 +523,20 @@ class SimulationEngine:
             return f"Rider {rider_id} is now AVAILABLE."
         return f"Rider {rider_id} not found."
 
-    def reoptimize(
+    def dispatch_batch(
         self,
-        aco_ants: int = 10,
-        aco_iterations: int = 12,
-        max_orders: Optional[int] = 30,
+        orders_to_dispatch: List[SimOrder],
+        available_riders: List[SimRider],
+        aco_ants: int = 8,
+        aco_iterations: int = 10,
     ) -> Optional[DeliveryPlan]:
-        """Runs ACO with riders starting from their current spatial locations to route all remaining orders."""
-        # Active orders requiring delivery
-        active_orders = [
+        """Dispatches and routes a batch of orders to available couriers using ACO."""
+        if not orders_to_dispatch or not available_riders:
+            return None
+
+        orders_to_dispatch = sorted(orders_to_dispatch, key=lambda o: (o.order_time_min, o.deadline_min))
+
+        batch_orders = [
             ProcessedOrder(
                 order_id=o.order_id,
                 restaurant_id=o.restaurant_id,
@@ -368,16 +548,10 @@ class SimulationEngine:
                 deadline_min=o.deadline_min,
                 order_status=o.status.value,
             )
-            for o in self.orders.values()
-            if o.status in (OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY)
+            for o in orders_to_dispatch
         ]
 
-        if max_orders is not None and len(active_orders) > max_orders:
-            active_orders.sort(key=lambda o: (o.order_time_min, o.deadline_min))
-            active_orders = active_orders[:max_orders]
-
-        # Available riders with live positions
-        active_riders = [
+        batch_riders = [
             ProcessedRider(
                 rider_id=r.rider_id,
                 latitude=r.current_lat,
@@ -385,12 +559,8 @@ class SimulationEngine:
                 capacity=max(1, r.capacity - len(r.carried_orders)),
                 status="AVAILABLE",
             )
-            for r in self.riders.values()
-            if r.status != RiderStatus.UNAVAILABLE
+            for r in available_riders
         ]
-
-        if not active_orders or not active_riders:
-            return None
 
         aco_cfg = ACOConfig(
             num_ants=aco_ants,
@@ -404,25 +574,119 @@ class SimulationEngine:
         aco.setup_problem(
             restaurants=list(self.restaurants.values()),
             customers=list(self.customers.values()),
-            orders=active_orders,
-            riders=active_riders,
+            orders=batch_orders,
+            riders=batch_riders,
         )
         result = aco.optimize(verbose=False)
         self.active_plan = result.best_plan
         self.last_reopt_result = result
         self.last_reopt_time_min = self.sim_time_min
+        self.last_dispatch_time_min = self.sim_time_min
 
-        # Re-assign new tour stops to riders
-        for r_id, tour in self.active_plan.tours.items():
-            if r_id in self.riders:
-                # Exclude the dummy rider_start node
-                stops_to_assign = [s for s in tour.stops if s.task_type != "rider_start"]
-                self.riders[r_id].assigned_stops = stops_to_assign
+        assigned_order_ids: Set[str] = set()
+
+        for r_id, tour in result.best_plan.tours.items():
+            stops_to_assign = [s for s in tour.stops if s.task_type != "rider_start"]
+            if stops_to_assign and r_id in self.riders:
+                rider = self.riders[r_id]
+                rider.assigned_stops.extend(stops_to_assign)
+                rider.status = RiderStatus.BUSY
                 for s in stops_to_assign:
                     if s.order_id and s.order_id in self.orders:
                         self.orders[s.order_id].assigned_rider_id = r_id
+                        assigned_order_ids.add(s.order_id)
+                if getattr(tour, "road_path_coordinates", None):
+                    rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in tour.road_path_coordinates]
+                else:
+                    self._update_rider_road_path(rider)
+
+        # Fallback allocation for any order in the batch not assigned by ACO
+        unserved_orders = [o for o in orders_to_dispatch if o.order_id not in assigned_order_ids]
+        if unserved_orders:
+            affected_riders = set()
+            for o in unserved_orders:
+                candidates = [
+                    r for r in available_riders
+                    if len(r.carried_orders) + len(r.assigned_stops) // 2 < r.capacity * 2
+                ]
+                if not candidates:
+                    candidates = available_riders
+                if candidates:
+                    rest = self.restaurants.get(o.restaurant_id)
+                    cust = self.customers.get(o.customer_id)
+                    if rest and cust:
+                        best_cand = min(
+                            candidates,
+                            key=lambda r: (
+                                len(r.assigned_stops),
+                                haversine_distance_km(r.current_lat, r.current_lon, rest.latitude, rest.longitude),
+                            ),
+                        )
+                        p_node = ACOTaskNode(
+                            node_id=f"P_{o.order_id}",
+                            task_type="pickup",
+                            order_id=o.order_id,
+                            lat=rest.latitude,
+                            lon=rest.longitude,
+                            ready_time_min=o.order_time_min,
+                            deadline_min=o.deadline_min,
+                        )
+                        d_node = ACOTaskNode(
+                            node_id=f"D_{o.order_id}",
+                            task_type="dropoff",
+                            order_id=o.order_id,
+                            lat=cust.latitude,
+                            lon=cust.longitude,
+                            ready_time_min=o.order_time_min,
+                            deadline_min=o.deadline_min,
+                        )
+                        best_cand.assigned_stops.extend([p_node, d_node])
+                        best_cand.status = RiderStatus.BUSY
+                        o.assigned_rider_id = best_cand.rider_id
+                        affected_riders.add(best_cand)
+
+            for r in affected_riders:
+                self._update_rider_road_path(r)
 
         return self.active_plan
+
+    def reoptimize(
+        self,
+        aco_ants: int = 6,
+        aco_iterations: int = 6,
+        max_orders: Optional[int] = 10,
+    ) -> Optional[DeliveryPlan]:
+        """Runs ACO with riders starting from their current spatial locations to route remaining orders."""
+        active_orders = [
+            o for o in self.orders.values()
+            if o.status in (OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY)
+            and o.assigned_rider_id is None
+        ]
+
+        if not active_orders:
+            active_orders = [
+                o for o in self.orders.values()
+                if o.status in (OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY)
+            ]
+
+        if max_orders is not None and len(active_orders) > max_orders:
+            active_orders.sort(key=lambda o: (o.order_time_min, o.deadline_min))
+            active_orders = active_orders[:max_orders]
+
+        active_riders = [
+            r for r in self.riders.values()
+            if r.status != RiderStatus.UNAVAILABLE
+        ]
+
+        if not active_orders or not active_riders:
+            return None
+
+        return self.dispatch_batch(
+            orders_to_dispatch=active_orders,
+            available_riders=active_riders,
+            aco_ants=aco_ants,
+            aco_iterations=aco_iterations,
+        )
 
     def get_snapshot(self) -> Dict[str, Any]:
         """Returns the full live state representation for REST/WebSocket serialization."""

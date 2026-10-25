@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { getStreetRoute } from '../../services/osrm';
 
 // Color palette for rider routes
 const RIDER_COLORS = [
@@ -73,14 +74,23 @@ export default function DeliveryMap({
     }
 
     osmDark.addTo(map);
-    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
-    // Initialize layer groups
-    layersRef.current.roadNetwork = L.layerGroup().addTo(map);
+    // Initialize layer groups - Road Network is available as an overlay layer without obscuring physical streets
     layersRef.current.routes = L.layerGroup().addTo(map);
     layersRef.current.restaurants = L.layerGroup().addTo(map);
     layersRef.current.customers = L.layerGroup().addTo(map);
     layersRef.current.riders = L.layerGroup().addTo(map);
+    layersRef.current.roadNetwork = L.layerGroup(); // Not added by default to preserve clean physical streets
+
+    const overlayMaps = {
+      '🛣️ Real Road Routes': layersRef.current.routes,
+      '🛵 Active Couriers': layersRef.current.riders,
+      '🏪 Restaurants': layersRef.current.restaurants,
+      '📍 Customers': layersRef.current.customers,
+      '🕸️ Grid Graph (Synthetic)': layersRef.current.roadNetwork
+    };
+
+    L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
 
     mapRef.current = map;
 
@@ -90,7 +100,7 @@ export default function DeliveryMap({
     };
   }, []);
 
-  // 2. Render Road Network
+  // 2. Render Road Network Overlay (Optional Grid)
   useEffect(() => {
     if (!mapRef.current || !layersRef.current.roadNetwork || !roadGraph?.edges) return;
 
@@ -249,7 +259,7 @@ export default function DeliveryMap({
     });
   }, [restaurants, customers]);
 
-  // 4. Render Active Delivery Routes & Live Riders
+  // 4. Render Active Delivery Routes & Live Riders along Real Physical Roads
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -270,6 +280,39 @@ export default function DeliveryMap({
       });
     }
 
+    const renderCourierPolyline = (points, courierColor, isSelected, rider) => {
+      if (!points || points.length < 2) return;
+
+      // Glow halo layer
+      L.polyline(points, {
+        color: courierColor,
+        weight: isSelected ? 8 : 5,
+        opacity: 0.3,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(routeLayer);
+
+      // Core street-following line
+      const poly = L.polyline(points, {
+        color: courierColor,
+        weight: isSelected ? 4.5 : 2.8,
+        opacity: isSelected ? 1.0 : 0.88,
+        dashArray: rider.status === 'AVAILABLE' && (!rider.assigned_stops || rider.assigned_stops.length === 0) ? '4, 6' : null,
+        lineCap: 'round',
+        lineJoin: 'round',
+      });
+
+      poly.bindPopup(`
+        <div style="font-size: 11px; line-height: 1.4;">
+          <strong style="color: ${courierColor};">Courier ${rider.rider_id}</strong><br/>
+          Status: <strong>${rider.status}</strong><br/>
+          Remaining Stops: <strong>${(rider.assigned_stops || []).length}</strong><br/>
+          Navigation: <span style="color:#10b981; font-weight:600;">OpenStreetMap Real Road Network</span>
+        </div>
+      `);
+      poly.addTo(routeLayer);
+    };
+
     riders.forEach((rider, idx) => {
       const color = RIDER_COLORS[idx % RIDER_COLORS.length];
       const isSelected = selectedRiderId === rider.rider_id;
@@ -278,33 +321,39 @@ export default function DeliveryMap({
       const rLon = typeof rider.current_lon === 'number' ? rider.current_lon : parseFloat(rider.current_lon);
       if (isNaN(rLat) || isNaN(rLon)) return;
 
-      // Draw Planned Route Polylines
+      // Assigned stops for rider
       const stops = (rider.assigned_stops && rider.assigned_stops.length > 0)
         ? rider.assigned_stops
         : (rider.route || riderRoutesMap[rider.rider_id] || []);
 
-      if (stops.length > 0) {
-        const latlngs = [[rLat, rLon]];
+      // Draw Planned Route Polylines along the road network
+      const roadPath = (rider.road_path && Array.isArray(rider.road_path) && rider.road_path.length > 1)
+        ? rider.road_path
+        : (bestPlan?.tours?.[rider.rider_id]?.road_path || []);
+
+      if (roadPath && roadPath.length > 1) {
+        const latlngs = roadPath.map(pt => [
+          typeof pt[0] === 'number' ? pt[0] : parseFloat(pt[0]),
+          typeof pt[1] === 'number' ? pt[1] : parseFloat(pt[1])
+        ]).filter(p => !isNaN(p[0]) && !isNaN(p[1]));
+        renderCourierPolyline(latlngs, color, isSelected, rider);
+      } else if (stops.length > 0) {
+        // Asynchronously query real physical road turn-by-turn coordinates instead of drawing straight chords
+        const waypoints = [[rLat, rLon]];
         stops.forEach(s => {
           const sLat = typeof s.lat === 'number' ? s.lat : (typeof s.latitude === 'number' ? s.latitude : parseFloat(s.lat || s.latitude));
           const sLon = typeof s.lon === 'number' ? s.lon : (typeof s.longitude === 'number' ? s.longitude : parseFloat(s.lon || s.longitude));
           if (!isNaN(sLat) && !isNaN(sLon)) {
-            latlngs.push([sLat, sLon]);
+            waypoints.push([sLat, sLon]);
           }
         });
 
-        if (latlngs.length > 1) {
-          try {
-            const poly = L.polyline(latlngs, {
-              color: color,
-              weight: isSelected ? 4 : 2,
-              opacity: isSelected ? 0.95 : 0.45,
-              dashArray: rider.status === 'IDLE' ? '4, 6' : null
-            });
-            poly.addTo(routeLayer);
-          } catch (e) {
-            // ignore polyline render error
-          }
+        if (waypoints.length > 1) {
+          getStreetRoute(waypoints).then(streetPts => {
+            if (streetPts && streetPts.length > 1) {
+              renderCourierPolyline(streetPts, color, isSelected, rider);
+            }
+          });
         }
       }
 
@@ -354,8 +403,23 @@ export default function DeliveryMap({
   return (
     <div className="map-card">
       <div className="map-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span>Bangalore Metropolitan Road Network & Live Fleet</span>
+          <span style={{
+            background: 'rgba(16, 185, 129, 0.15)',
+            color: '#10b981',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontSize: '11px',
+            fontWeight: 600,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+            Real OSM Road Routing
+          </span>
         </div>
         <div className="map-legend">
           <div className="legend-item">

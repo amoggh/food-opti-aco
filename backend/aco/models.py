@@ -1,7 +1,7 @@
 """Data models for Ant Colony Optimization delivery representation."""
 import math
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -30,6 +30,7 @@ class RiderTour:
     total_distance_km: float = 0.0
     total_time_min: float = 0.0
     orders_delivered: List[str] = field(default_factory=list)
+    road_path_coordinates: List[Tuple[float, float]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -46,6 +47,9 @@ class RiderTour:
                     "deadline_min": round(s.deadline_min, 2) if not math.isinf(s.deadline_min) else None,
                 }
                 for s in self.stops
+            ],
+            "road_path": [
+                [round(pt[0], 6), round(pt[1], 6)] for pt in self.road_path_coordinates
             ],
             "arrival_times": [round(t, 2) for t in self.arrival_times],
             "departure_times": [round(t, 2) for t in self.departure_times],
