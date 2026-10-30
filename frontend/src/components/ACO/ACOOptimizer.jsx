@@ -6,10 +6,9 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  CartesianGrid, 
-  Legend 
+  CartesianGrid 
 } from 'recharts';
-import { Sliders, Play, CheckCircle2, Award, Zap, Compass } from 'lucide-react';
+import { Sliders, Sparkles, Check, Loader2, ArrowRight } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
@@ -19,9 +18,9 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
   const [alpha, setAlpha] = useState(1.2);
   const [beta, setBeta] = useState(2.5);
   const [evaporation, setEvaporation] = useState(0.15);
-  const [randomSeed, setRandomSeed] = useState(42);
 
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [activePreset, setActivePreset] = useState('balanced');
   const [convergenceHistory, setConvergenceHistory] = useState(
     bestPlan?.convergence_history?.map((cost, idx) => ({ iteration: idx + 1, cost })) || [
       { iteration: 1, cost: 4890.2 },
@@ -35,6 +34,29 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
   );
   const [statusMsg, setStatusMsg] = useState(null);
 
+  const applyPreset = (preset) => {
+    setActivePreset(preset);
+    if (preset === 'fast') {
+      setNumAnts(10);
+      setIterations(15);
+      setAlpha(1.0);
+      setBeta(3.0);
+      setEvaporation(0.20);
+    } else if (preset === 'balanced') {
+      setNumAnts(20);
+      setIterations(30);
+      setAlpha(1.2);
+      setBeta(2.5);
+      setEvaporation(0.15);
+    } else if (preset === 'deep') {
+      setNumAnts(35);
+      setIterations(50);
+      setAlpha(1.5);
+      setBeta(2.0);
+      setEvaporation(0.10);
+    }
+  };
+
   const handleRunACO = async () => {
     setIsOptimizing(true);
     setStatusMsg('Colony ants exploring probabilistic delivery paths...');
@@ -45,7 +67,7 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
         alpha: parseFloat(alpha),
         beta: parseFloat(beta),
         evaporation_rate: parseFloat(evaporation),
-        random_seed: parseInt(randomSeed),
+        random_seed: 42,
         dynamic: false,
       });
 
@@ -57,7 +79,7 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
         setConvergenceHistory(historyData);
       }
 
-      setStatusMsg(`Optimization complete! Best Solution Cost: ${result.best_cost?.toFixed(1)}`);
+      setStatusMsg(`Optimization complete. Best solution score: ${result.best_cost?.toFixed(1)}`);
       if (onOptimizationComplete) {
         onOptimizationComplete(result);
       }
@@ -76,17 +98,47 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
   return (
     <div className="aco-view-layout">
       {/* Left Panel: Hyperparameter Controls */}
-      <div className="panel-card" style={{ padding: '1.25rem', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-          <Sliders size={18} color="#38bdf8" />
-          <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>ACO Hyperparameters</span>
+      <div className="chart-card-shadcn" style={{ gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <Sliders size={15} />
+            <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#fafafa' }}>Optimizer Settings</span>
+          </div>
+        </div>
+
+        {/* Quick Presets */}
+        <div>
+          <div className="form-label" style={{ marginBottom: '0.4rem' }}>Configuration Presets</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.4rem' }}>
+            <button 
+              className={`btn-shadcn ${activePreset === 'fast' ? 'primary' : 'outline'}`}
+              style={{ fontSize: '0.72rem', padding: '0.3rem 0.4rem' }}
+              onClick={() => applyPreset('fast')}
+            >
+              Fast
+            </button>
+            <button 
+              className={`btn-shadcn ${activePreset === 'balanced' ? 'primary' : 'outline'}`}
+              style={{ fontSize: '0.72rem', padding: '0.3rem 0.4rem' }}
+              onClick={() => applyPreset('balanced')}
+            >
+              Balanced
+            </button>
+            <button 
+              className={`btn-shadcn ${activePreset === 'deep' ? 'primary' : 'outline'}`}
+              style={{ fontSize: '0.72rem', padding: '0.3rem 0.4rem' }}
+              onClick={() => applyPreset('deep')}
+            >
+              Thorough
+            </button>
+          </div>
         </div>
 
         {/* 1. Number of Ants */}
-        <div className="param-group">
-          <div className="param-label">
-            <span>Colony Size (Ants $m$)</span>
-            <strong style={{ color: '#38bdf8' }}>{numAnts}</strong>
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
+            <span style={{ color: '#a1a1aa' }}>Colony Ants (m)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)' }}>{numAnts}</strong>
           </div>
           <input 
             type="range" 
@@ -94,16 +146,16 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
             max="50" 
             step="5"
             value={numAnts}
-            onChange={(e) => setNumAnts(e.target.value)}
+            onChange={(e) => { setNumAnts(e.target.value); setActivePreset('custom'); }}
             className="param-slider"
           />
         </div>
 
         {/* 2. Iterations */}
-        <div className="param-group">
-          <div className="param-label">
-            <span>Iterations ($T$)</span>
-            <strong style={{ color: '#38bdf8' }}>{iterations}</strong>
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
+            <span style={{ color: '#a1a1aa' }}>Iterations (T)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)' }}>{iterations}</strong>
           </div>
           <input 
             type="range" 
@@ -111,16 +163,16 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
             max="100" 
             step="5"
             value={iterations}
-            onChange={(e) => setIterations(e.target.value)}
+            onChange={(e) => { setIterations(e.target.value); setActivePreset('custom'); }}
             className="param-slider"
           />
         </div>
 
-        {/* 3. Alpha (Pheromone Weight) */}
-        <div className="param-group">
-          <div className="param-label">
-            <span>Pheromone Exponent (&alpha;)</span>
-            <strong style={{ color: '#818cf8' }}>{alpha}</strong>
+        {/* 3. Alpha */}
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
+            <span style={{ color: '#a1a1aa' }}>Pheromone Weight (&alpha;)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)' }}>{alpha}</strong>
           </div>
           <input 
             type="range" 
@@ -128,16 +180,17 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
             max="5.0" 
             step="0.1"
             value={alpha}
-            onChange={(e) => setAlpha(e.target.value)}
+            onChange={(e) => { setAlpha(e.target.value); setActivePreset('custom'); }}
             className="param-slider"
           />
+          <span style={{ fontSize: '0.68rem', color: '#71717a' }}>Importance of historical successful trails</span>
         </div>
 
-        {/* 4. Beta (Heuristic Visibility) */}
-        <div className="param-group">
-          <div className="param-label">
-            <span>Heuristic Exponent (&beta;)</span>
-            <strong style={{ color: '#34d399' }}>{beta}</strong>
+        {/* 4. Beta */}
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
+            <span style={{ color: '#a1a1aa' }}>Heuristic Weight (&beta;)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)' }}>{beta}</strong>
           </div>
           <input 
             type="range" 
@@ -145,16 +198,17 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
             max="5.0" 
             step="0.1"
             value={beta}
-            onChange={(e) => setBeta(e.target.value)}
+            onChange={(e) => { setBeta(e.target.value); setActivePreset('custom'); }}
             className="param-slider"
           />
+          <span style={{ fontSize: '0.68rem', color: '#71717a' }}>Priority given to nearby deliveries and deadlines</span>
         </div>
 
-        {/* 5. Evaporation Rate */}
-        <div className="param-group">
-          <div className="param-label">
-            <span>Pheromone Evaporation (&rho;)</span>
-            <strong style={{ color: '#f59e0b' }}>{evaporation}</strong>
+        {/* 5. Evaporation */}
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
+            <span style={{ color: '#a1a1aa' }}>Evaporation Rate (&rho;)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)' }}>{evaporation}</strong>
           </div>
           <input 
             type="range" 
@@ -162,119 +216,124 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
             max="0.5" 
             step="0.02"
             value={evaporation}
-            onChange={(e) => setEvaporation(e.target.value)}
+            onChange={(e) => { setEvaporation(e.target.value); setActivePreset('custom'); }}
             className="param-slider"
           />
+          <span style={{ fontSize: '0.68rem', color: '#71717a' }}>How quickly trails decay to escape local minima</span>
         </div>
 
         {/* Run Button */}
         <button 
-          className="btn-ctrl primary" 
+          className="btn-shadcn primary" 
           onClick={handleRunACO}
           disabled={isOptimizing}
-          style={{ width: '100%', justifyContent: 'center', padding: '0.65rem', marginTop: '0.5rem' }}
+          style={{ width: '100%', padding: '0.55rem', marginTop: '0.35rem' }}
         >
-          {isOptimizing ? <Compass className="animate-spin" size={16} /> : <Zap size={16} />}
-          <span>{isOptimizing ? 'Optimizing Fleet Routes...' : 'Run ACO Solver'}</span>
+          {isOptimizing ? <Loader2 className="animate-spin" size={14} /> : <Sparkles size={14} />}
+          <span>{isOptimizing ? 'Finding Optimal Paths...' : 'Execute ACO Solver'}</span>
         </button>
 
         {statusMsg && (
           <div style={{ 
-            fontSize: '0.75rem', 
-            padding: '0.5rem 0.75rem', 
-            background: 'rgba(2, 132, 199, 0.12)', 
-            border: '1px solid rgba(56, 189, 248, 0.25)', 
+            fontSize: '0.74rem', 
+            padding: '0.5rem 0.65rem', 
+            background: '#18181b', 
+            border: '1px solid var(--border)', 
             borderRadius: '6px',
-            color: '#7dd3fc'
+            color: '#a1a1aa'
           }}>
             {statusMsg}
           </div>
         )}
       </div>
 
-      {/* Right Panel: Convergence Curve & Solution Breakdown */}
+      {/* Right Panel: Convergence Curve & Intuitive Guide */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        {/* Convergence Graph Card */}
-        <div className="chart-card" style={{ height: '380px' }}>
+        {/* Convergence Curve Card */}
+        <div className="chart-card-shadcn" style={{ height: '360px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div className="chart-title">Colony Convergence Trajectory</div>
-              <div className="chart-desc">Monotonic best cost minimization across iterations</div>
+              <div className="chart-title-shadcn">Colony Convergence Trajectory</div>
+              <div className="chart-desc-shadcn">Optimization cost minimization as ants share trail information</div>
             </div>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '0.4rem', 
-              background: 'rgba(16, 185, 129, 0.12)', 
-              padding: '0.3rem 0.75rem', 
-              borderRadius: '20px', 
-              border: '1px solid rgba(16, 185, 129, 0.3)' 
+              gap: '0.35rem', 
+              background: '#18181b', 
+              padding: '0.25rem 0.6rem', 
+              borderRadius: '6px', 
+              border: '1px solid var(--border)' 
             }}>
-              <Award size={14} color="#34d399" />
-              <span style={{ fontSize: '0.78rem', color: '#34d399', fontWeight: 600 }}>
-                Best Fitness Cost: {currentBestCost}
+              <Check size={12} style={{ color: '#10b981' }} />
+              <span style={{ fontSize: '0.74rem', color: '#fafafa', fontFamily: 'var(--font-mono)' }}>
+                Best Score: {currentBestCost}
               </span>
             </div>
           </div>
 
-          <div style={{ width: '100%', height: '280px', marginTop: '0.5rem' }}>
+          <div style={{ width: '100%', height: '260px', marginTop: '0.5rem' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={convergenceHistory} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <LineChart data={convergenceHistory} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                 <XAxis 
                   dataKey="iteration" 
-                  stroke="#64748b" 
+                  stroke="#71717a" 
                   fontSize={11} 
-                  label={{ value: 'Iteration (t)', position: 'insideBottomRight', offset: -5, fill: '#64748b', fontSize: 11 }}
+                  tickLine={false}
                 />
                 <YAxis 
-                  stroke="#64748b" 
+                  stroke="#71717a" 
                   fontSize={11} 
-                  label={{ value: 'Best Cost J', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} 
+                  tickLine={false}
+                  domain={['auto', 'auto']}
                 />
                 <Tooltip 
-                  contentStyle={{ background: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
-                  labelStyle={{ color: '#38bdf8' }}
+                  contentStyle={{ background: '#18181b', borderColor: '#27272a', borderRadius: '6px', fontSize: '12px' }}
+                  labelStyle={{ color: '#fafafa' }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', color: '#94a3b8' }} />
                 <Line 
                   type="monotone" 
                   dataKey="cost" 
-                  name="Best Colony Solution Cost" 
-                  stroke="#38bdf8" 
-                  strokeWidth={2.5} 
-                  dot={{ r: 3, fill: '#0284c7' }} 
-                  activeDot={{ r: 6, fill: '#38bdf8', stroke: '#ffffff' }}
+                  name="Fleet Cost Score" 
+                  stroke="#fafafa" 
+                  strokeWidth={2} 
+                  dot={{ r: 2.5, fill: '#fafafa' }} 
+                  activeDot={{ r: 5, fill: '#fafafa', stroke: '#09090b' }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Mathematical Formulation Card */}
-        <div className="chart-card">
-          <div className="chart-title">Bio-Inspired Optimization Cost Breakdown</div>
-          <div className="chart-desc">
-            The Ant Colony System minimizes multi-objective cost: 
-            <code style={{ background: '#0f172a', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px', color: '#38bdf8' }}>
-              J = &lambda;_dist &middot; D + &lambda;_late &middot; T_late + &lambda;_fresh &middot; W_fresh
-            </code>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '0.5rem' }}>
-            <div style={{ background: '#0f172a', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase' }}>Distance Weight (&lambda;_dist)</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#f8fafc' }}>1.0x</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Minimizes vehicle fuel & transit wear</div>
+        {/* Clear Conceptual Guide: How ACO works */}
+        <div className="chart-card-shadcn">
+          <div className="chart-title-shadcn">How Ant Colony Optimization Works in Delivery Logistics</div>
+          <div className="chart-desc-shadcn">A multi-agent, bio-inspired heuristic for solving complex Vehicle Routing Problems (VRP)</div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginTop: '0.35rem' }}>
+            <div style={{ background: '#18181b', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.7rem', color: '#71717a', textTransform: 'uppercase', fontWeight: 600 }}>Step 1</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fafafa', margin: '2px 0 4px' }}>Probabilistic Route Building</div>
+              <div style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
+                Virtual ants construct courier tours by balancing distance proximity, prep ready-times, and promised customer deadlines.
+              </div>
             </div>
-            <div style={{ background: '#0f172a', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase' }}>Tardiness Penalty (&lambda;_late)</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fb7185' }}>5.0x / min</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Heavily penalizes deadline violations</div>
+
+            <div style={{ background: '#18181b', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.7rem', color: '#71717a', textTransform: 'uppercase', fontWeight: 600 }}>Step 2</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fafafa', margin: '2px 0 4px' }}>Multi-Objective Scoring</div>
+              <div style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
+                Every solution is evaluated against three core objectives: total distance driven, deadline tardiness penalties, and food freshness.
+              </div>
             </div>
-            <div style={{ background: '#0f172a', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase' }}>Food Freshness Penalty (&lambda;_fresh)</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#f59e0b' }}>0.5x / min</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Reduces food cooling while in courier bag</div>
+
+            <div style={{ background: '#18181b', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.7rem', color: '#71717a', textTransform: 'uppercase', fontWeight: 600 }}>Step 3</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fafafa', margin: '2px 0 4px' }}>Pheromone Reinforcement</div>
+              <div style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
+                Superior delivery sequences deposit pheromone trails, causing future ants to converge on the globally optimal courier schedule.
+              </div>
             </div>
           </div>
         </div>

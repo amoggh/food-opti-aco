@@ -16,7 +16,17 @@ class TrafficEventRequest(BaseModel):
 
 
 class RoadClosureRequest(BaseModel):
-    edge_id: str
+    edge_id: Optional[str] = None
+    source: Optional[str] = None
+    target: Optional[str] = None
+    trigger_reoptimization: Optional[bool] = True
+
+    def get_edge_id(self) -> str:
+        if self.edge_id:
+            return self.edge_id
+        if self.source and self.target:
+            return f"{self.source}_{self.target}"
+        return "N00_N01"
 
 
 class RiderUnavailableRequest(BaseModel):

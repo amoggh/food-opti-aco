@@ -31,7 +31,13 @@ class OSMRouter:
     OSRM_ENDPOINT = "https://router.project-osrm.org/route/v1/driving"
 
     def __init__(self, cache_file: Optional[Path] = None):
-        self.cache_file = Path(cache_file or "backend/data/processed/osm_route_cache.json")
+        base_dir = Path(__file__).resolve().parent.parent
+        if cache_file is not None:
+            self.cache_file = Path(cache_file)
+        elif Path("backend/data/processed").exists():
+            self.cache_file = Path("backend/data/processed/osm_route_cache.json")
+        else:
+            self.cache_file = base_dir / "data" / "processed" / "osm_route_cache.json"
         self._cache: Dict[str, Dict[str, Any]] = {}
         self._cache_dirty: bool = False
         self._load_cache()

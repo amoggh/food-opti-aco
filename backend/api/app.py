@@ -1,9 +1,15 @@
 """FastAPI backend service for food delivery simulation and ACO optimization."""
 import asyncio
+import sys
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
+
+# Ensure project root is in sys.path regardless of execution directory
+_project_root = Path(__file__).resolve().parent.parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -174,16 +180,56 @@ async def trigger_traffic_change(req: TrafficEventRequest):
 
 @app.post("/api/simulation/events/road-closure")
 async def trigger_road_closure(req: RoadClosureRequest):
+    edge_id = req.get_edge_id()
     event = SimEvent(
         event_id=f"EVT_CLOSURE_{len(sim_engine.event_history) + 1}",
         event_type=EventType.ROAD_CLOSURE,
         timestamp_min=sim_engine.sim_time_min,
-        payload=req.model_dump(),
+        payload={"edge_id": edge_id, "source": req.source, "target": req.target},
         requires_reoptimization=True,
     )
     result = sim_engine.trigger_event(event)
     await broadcast_state(result["snapshot"])
     return result
+
+
+@app.post("/api/simulation/focus-order")
+async def focus_order(payload: Dict[str, Any]):
+    order_id = payload.get("order_id")
+    if not order_id:
+        raise HTTPException(status_code=400, detail="order_id is required")
+    snapshot = sim_engine.set_focused_order(order_id)
+    await broadcast_state(snapshot)
+    return {"message": f"Focused on order {order_id}", "snapshot": snapshot, "state": snapshot, **snapshot}
+
+
+@app.post("/api/simulation/unfocus-order")
+async def unfocus_order():
+    snapshot = sim_engine.clear_focused_order()
+    await broadcast_state(snapshot)
+    return {"message": "Focus cleared, returned to full fleet mode", "snapshot": snapshot, "state": snapshot, **snapshot}
+
+
+@app.post("/api/simulation/events/block-order-route")
+async def block_order_route(payload: Dict[str, Any]):
+    order_id = payload.get("order_id")
+    if not order_id:
+        raise HTTPException(status_code=400, detail="order_id is required")
+    res = sim_engine.block_order_route(order_id)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    await broadcast_state(res.get("snapshot", {}))
+    return res
+
+
+@app.post("/api/simulation/events/clear-closures")
+async def clear_road_closures():
+    sim_engine.clear_road_closures()
+    snapshot = sim_engine.get_snapshot()
+    await broadcast_state(snapshot)
+    return {"message": "All road closures cleared", "snapshot": snapshot, "state": snapshot, **snapshot}
+    await broadcast_state(snapshot)
+    return {"message": "All road closures cleared", "snapshot": snapshot, "state": snapshot, **snapshot}
 
 
 @app.post("/api/simulation/events/rider-unavailable")

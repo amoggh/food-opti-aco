@@ -27,8 +27,13 @@ export default function App() {
   const [wsConnected, setWsConnected] = useState(false);
   const [selectedRiderId, setSelectedRiderId] = useState(null);
 
-  // Playback loop ref
+  // Focused Order for uncluttered route analysis
+  const [focusedOrderId, setFocusedOrderId] = useState(null);
+
+  // Playback loop and sync refs
   const playbackIntervalRef = useRef(null);
+  const isRunningRef = useRef(false);
+  const isTickingRef = useRef(false);
 
   // 1. Initial Data Fetch
   const loadInitialData = async () => {
@@ -59,6 +64,7 @@ export default function App() {
         setSimState(state);
         if (state?.is_running !== undefined) {
           setIsRunning(state.is_running);
+          isRunningRef.current = state.is_running;
         }
       }
       if (metricsRes.status === 'fulfilled') {
@@ -80,7 +86,8 @@ export default function App() {
       const state = msg?.state || msg?.snapshot || (msg?.sim_time_min !== undefined ? msg : null);
       if (state) {
         setSimState(state);
-        if (state.is_running !== undefined) {
+        // Only allow server WebSocket to set is_running if client is not in an explicit paused state
+        if (state.is_running !== undefined && isRunningRef.current) {
           setIsRunning(state.is_running);
         }
       }
@@ -93,22 +100,54 @@ export default function App() {
     };
   }, []);
 
-  // 3. Polling / Playback Loop when running
+  // 3. Fast & Responsive Playback Loop with True Speed Multipliers
   useEffect(() => {
     if (isRunning) {
-      const stepIntervalMs = Math.max(200, 1000 / speedMultiplier);
+      isRunningRef.current = true;
+
+      // True calibrated step intervals and delta-times:
+      let stepIntervalMs = 500;
+      let stepDt = 1.0;
+
+      if (speedMultiplier <= 1) {
+        stepIntervalMs = 1000;
+        stepDt = 1.0;  // 1 min / sec
+      } else if (speedMultiplier === 2) {
+        stepIntervalMs = 500;
+        stepDt = 1.0;  // 2 min / sec
+      } else if (speedMultiplier === 5) {
+        stepIntervalMs = 300;
+        stepDt = 1.5;  // 5 min / sec
+      } else if (speedMultiplier === 10) {
+        stepIntervalMs = 200;
+        stepDt = 2.0;  // 10 min / sec (fast!)
+      } else if (speedMultiplier === 20) {
+        stepIntervalMs = 150;
+        stepDt = 3.0;  // 20 min / sec
+      } else {
+        stepIntervalMs = 100;
+        stepDt = 5.0;  // 50 min / sec (turbo!)
+      }
+
       playbackIntervalRef.current = setInterval(async () => {
+        if (!isRunningRef.current || isTickingRef.current) return;
+        isTickingRef.current = true;
         try {
-          const res = await api.stepSimulation(1.0);
-          const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
-          if (state) {
-            setSimState(state);
+          const res = await api.stepSimulation(stepDt);
+          if (isRunningRef.current) {
+            const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+            if (state) {
+              setSimState(state);
+            }
           }
         } catch (err) {
           console.warn('Simulation step tick failed:', err);
+        } finally {
+          isTickingRef.current = false;
         }
       }, stepIntervalMs);
     } else {
+      isRunningRef.current = false;
       if (playbackIntervalRef.current) {
         clearInterval(playbackIntervalRef.current);
         playbackIntervalRef.current = null;
@@ -116,17 +155,20 @@ export default function App() {
     }
 
     return () => {
+      isRunningRef.current = false;
       if (playbackIntervalRef.current) {
         clearInterval(playbackIntervalRef.current);
+        playbackIntervalRef.current = null;
       }
     };
   }, [isRunning, speedMultiplier]);
 
   // Simulation Controls Handlers
   const handleStart = async () => {
+    isRunningRef.current = true;
+    setIsRunning(true);
     try {
       const res = await api.startSimulation(speedMultiplier, 1.0);
-      setIsRunning(true);
       const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
       if (state) {
         setSimState(state);
@@ -138,22 +180,26 @@ export default function App() {
       }).catch(() => {});
     } catch (err) {
       console.error('Failed to start simulation:', err);
-      // fallback to client-side ticking
-      setIsRunning(true);
     }
   };
 
   const handlePause = async () => {
+    // Synchronously stop client interval immediately
+    isRunningRef.current = false;
+    setIsRunning(false);
+    if (playbackIntervalRef.current) {
+      clearInterval(playbackIntervalRef.current);
+      playbackIntervalRef.current = null;
+    }
+
     try {
       const res = await api.pauseSimulation();
-      setIsRunning(false);
       const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
       if (state) {
         setSimState(state);
       }
     } catch (err) {
       console.error('Failed to pause simulation:', err);
-      setIsRunning(false);
     }
   };
 
@@ -170,9 +216,15 @@ export default function App() {
   };
 
   const handleReset = async () => {
+    isRunningRef.current = false;
+    setIsRunning(false);
+    if (playbackIntervalRef.current) {
+      clearInterval(playbackIntervalRef.current);
+      playbackIntervalRef.current = null;
+    }
+
     try {
       const res = await api.resetSimulation();
-      setIsRunning(false);
       const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
       if (state) {
         setSimState(state);
@@ -188,11 +240,32 @@ export default function App() {
     }
   };
 
+  const handleSelectOrder = async (orderId) => {
+    if (!orderId || orderId === focusedOrderId) {
+      setFocusedOrderId(null);
+      try {
+        const res = await api.unfocusOrder();
+        const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+        if (state) setSimState(state);
+      } catch (err) {
+        console.warn('Unfocus order error:', err);
+      }
+    } else {
+      setFocusedOrderId(orderId);
+      try {
+        const res = await api.focusOrder(orderId);
+        const state = res?.state || res?.snapshot || (res?.sim_time_min !== undefined ? res : null);
+        if (state) setSimState(state);
+      } catch (err) {
+        console.warn('Focus order error:', err);
+      }
+    }
+  };
+
   const handleOptimizationComplete = (result) => {
     if (result) {
       const plan = result.plan || result.best_plan || result;
       setBestPlan(plan);
-      // refresh simulation state to reflect reassigned routes
       api.getSimState().then(res => {
         const state = res?.state || res?.snapshot || res;
         setSimState(state);
@@ -215,6 +288,8 @@ export default function App() {
         onReset={handleReset}
         speedMultiplier={speedMultiplier}
         setSpeedMultiplier={setSpeedMultiplier}
+        focusedOrderId={focusedOrderId}
+        onClearFocus={() => handleSelectOrder(null)}
       />
 
       {/* High-Level Telemetry HUD Banner */}
@@ -231,20 +306,28 @@ export default function App() {
               roadGraph={roadGraph}
               riders={simState?.riders || []}
               orders={simState?.orders || []}
+              closedEdges={simState?.closed_edges || []}
+              blockedEdgesInfo={simState?.blocked_edges_info || []}
               bestPlan={bestPlan}
               selectedRiderId={selectedRiderId}
               onSelectRider={(id) => setSelectedRiderId(id === selectedRiderId ? null : id)}
+              focusedOrderId={focusedOrderId}
+              onSelectOrder={handleSelectOrder}
+              onRefreshState={() => api.getSimState().then(setSimState).catch(console.warn)}
             />
 
             <div className="sidebar-panels">
               <OrderQueue 
                 orders={simState?.orders || []} 
-                currentTimeMinutes={simState?.current_time_minutes || 0} 
+                currentTimeMinutes={simState?.current_time_minutes || simState?.sim_time_min || 0}
+                focusedOrderId={focusedOrderId}
+                onSelectOrder={handleSelectOrder}
               />
               <FleetStatus 
                 riders={simState?.riders || []}
                 selectedRiderId={selectedRiderId}
                 onSelectRider={(id) => setSelectedRiderId(id === selectedRiderId ? null : id)}
+                focusedOrderId={focusedOrderId}
               />
             </div>
           </div>
@@ -264,8 +347,11 @@ export default function App() {
             restaurants={restaurants}
             customers={customers}
             riders={simState?.riders || []}
+            orders={simState?.orders || []}
             roadGraph={roadGraph}
-            simTimeMinutes={simState?.current_time_minutes || 0}
+            simTimeMinutes={simState?.current_time_minutes || simState?.sim_time_min || 0}
+            focusedOrderId={focusedOrderId}
+            onSelectOrder={handleSelectOrder}
             onEventTriggered={() => {
               api.getSimState().then(setSimState).catch(console.warn);
             }}

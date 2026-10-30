@@ -23,21 +23,22 @@ class ErrorBoundary extends React.Component {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#080c14',
-          color: '#f8fafc',
+          background: '#09090b',
+          color: '#fafafa',
           padding: '2rem',
-          fontFamily: 'system-ui, sans-serif'
+          fontFamily: "'Geist', -apple-system, sans-serif"
         }}>
-          <h2 style={{ color: '#f43f5e', marginBottom: '1rem' }}>Something went wrong rendering the UI</h2>
+          <h2 style={{ color: '#ef4444', marginBottom: '1rem', fontWeight: 600 }}>Something went wrong rendering the UI</h2>
           <pre style={{
-            background: '#0f172a',
+            background: '#18181b',
             padding: '1rem',
             borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid #27272a',
             maxWidth: '600px',
             overflow: 'auto',
             fontSize: '12px',
-            color: '#94a3b8'
+            color: '#a1a1aa',
+            fontFamily: "'Geist Mono', monospace"
           }}>
             {this.state.error?.message || String(this.state.error)}
           </pre>
@@ -45,13 +46,14 @@ class ErrorBoundary extends React.Component {
             onClick={() => window.location.reload()}
             style={{
               marginTop: '1.5rem',
-              padding: '0.6rem 1.2rem',
-              background: '#38bdf8',
-              color: '#080c14',
+              padding: '0.5rem 1.2rem',
+              background: '#fafafa',
+              color: '#09090b',
               border: 'none',
               borderRadius: '6px',
-              fontWeight: 600,
-              cursor: 'pointer'
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: "'Geist', sans-serif"
             }}
           >
             Reload Page

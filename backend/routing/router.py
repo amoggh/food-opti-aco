@@ -41,6 +41,10 @@ class RoutingEngine:
     def _get_edge_weight(
         self, edge: RoadEdge, criterion: str, current_time_min: float
     ) -> float:
+        # If edge is marked closed or in traffic model's closed edges, treat as impassable
+        if getattr(edge, "is_closed", False) or self.traffic_model.is_edge_closed(edge.edge_id):
+            return 1e8
+
         if criterion == "distance":
             return edge.distance_km
         elif criterion == "time":

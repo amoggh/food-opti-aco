@@ -90,6 +90,32 @@ export const api = {
       body: JSON.stringify(closureData),
     }));
   },
+  async blockOrderRoute(orderId) {
+    return handleResponse(await fetch(`${API_BASE}/simulation/events/block-order-route`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: orderId }),
+    }));
+  },
+  async clearRoadClosures() {
+    return handleResponse(await fetch(`${API_BASE}/simulation/events/clear-closures`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    }));
+  },
+  async focusOrder(orderId) {
+    return handleResponse(await fetch(`${API_BASE}/simulation/focus-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: orderId }),
+    }));
+  },
+  async unfocusOrder() {
+    return handleResponse(await fetch(`${API_BASE}/simulation/unfocus-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    }));
+  },
   async injectRiderUnavailable(riderId, reason = 'Breakdown') {
     return handleResponse(await fetch(`${API_BASE}/simulation/events/rider-unavailable`, {
       method: 'POST',
