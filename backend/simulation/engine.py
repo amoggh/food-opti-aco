@@ -146,9 +146,11 @@ class SimulationEngine:
         self.last_reopt_time_min: float = 0.0
         self.last_dispatch_time_min: float = 0.0
 
-        # Dedicated Single-Order Focus Mode
+        # Dedicated Single-Order Focus Mode & Roadblock Detour State
         self.focused_order_id: Optional[str] = None
         self.focus_backup_state: Optional[Dict[str, Any]] = None
+        self.active_blocked_road_coords: List[List[float]] = []
+        self.active_blocked_edge_name: str = ""
 
         self._load_environment()
 
@@ -394,6 +396,8 @@ class SimulationEngine:
     def clear_road_closures(self) -> None:
         """Clears all active road closures and restores normal street paths."""
         self.closed_edges.clear()
+        self.active_blocked_road_coords.clear()
+        self.active_blocked_edge_name = ""
         self.traffic_model.clear_overrides()
         if self.graph:
             for edge in self.graph.edges.values():
@@ -421,10 +425,10 @@ class SimulationEngine:
         cust = self.customers.get(order.customer_id)
         rider = self.riders.get(order.assigned_rider_id) if order.assigned_rider_id else None
 
-        if not rest or not cust or not self.graph or not self.router:
-            return {"error": "Required graph or entities not found", "snapshot": self.get_snapshot()}
+        if not rest or not cust:
+            return {"error": "Required order entities not found", "snapshot": self.get_snapshot()}
 
-        # Identify path between courier/restaurant and customer
+        # Identify path start and end
         if rider and order.status == OrderStatus.PICKED_UP:
             start_lat, start_lon = rider.current_lat, rider.current_lon
         else:
@@ -432,64 +436,55 @@ class SimulationEngine:
 
         end_lat, end_lon = cust.latitude, cust.longitude
 
-        start_node = self.graph.find_nearest_node(start_lat, start_lon)
-        end_node = self.graph.find_nearest_node(end_lat, end_lon)
-
-        # Clear existing closures first to inspect baseline path
+        # Clear existing closures first
         self.clear_road_closures()
 
-        try:
-            route = self.router.find_route_between_nodes(start_node, end_node, criterion="distance")
-            path_nodes = route.path_nodes
-        except Exception:
-            path_nodes = [start_node, end_node]
+        # 1. Determine baseline physical road path
+        points_to_visit = [(start_lat, start_lon), (end_lat, end_lon)]
+        base_coords = []
+        if self.router and getattr(self.router, "osm_router", None):
+            raw_base, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
+            if raw_base:
+                base_coords = [[round(pt[0], 6), round(pt[1], 6)] for pt in raw_base]
 
-        if len(path_nodes) >= 2:
-            mid_idx = max(1, len(path_nodes) // 2)
-            u = path_nodes[mid_idx - 1]
-            v = path_nodes[mid_idx]
+        if not base_coords or len(base_coords) < 4:
+            base_coords = [[start_lat, start_lon], [end_lat, end_lon]]
+
+        # 2. Extract the middle section of the road as the closed road segment
+        if len(base_coords) >= 6:
+            mid = len(base_coords) // 2
+            start_b = max(1, mid - 3)
+            end_b = min(len(base_coords) - 2, mid + 4)
+            blocked_slice = base_coords[start_b:end_b]
+            self.active_blocked_road_coords = blocked_slice
+            self.active_blocked_edge_name = f"Corridor Segment near ({blocked_slice[0][0]:.4f}, {blocked_slice[0][1]:.4f})"
         else:
-            neighbors = self.graph.get_neighbors(start_node)
-            if neighbors:
-                u = neighbors[0].u
-                v = neighbors[0].v
-            else:
-                u = start_node
-                v = end_node
+            mid_lat = (start_lat + end_lat) / 2
+            mid_lon = (start_lon + end_lon) / 2
+            self.active_blocked_road_coords = [
+                [mid_lat - 0.001, mid_lon - 0.001],
+                [mid_lat + 0.001, mid_lon + 0.001]
+            ]
+            self.active_blocked_edge_name = "Primary Delivery Avenue"
 
-        edge_id = f"{u}_{v}"
-        rev_id = f"{v}_{u}"
-
-        # Close this road segment
+        edge_id = "ROAD_CLOSURE_FOCUSED"
         self.closed_edges.add(edge_id)
-        self.closed_edges.add(rev_id)
         self.traffic_model.close_edge(edge_id)
-        self.traffic_model.close_edge(rev_id)
 
-        for edge in self.graph.edges.values():
-            if (edge.u == u and edge.v == v) or (edge.u == v and edge.v == u):
-                edge.is_closed = True
-                edge.traffic_multiplier = 999.0
+        if self.router:
+            self.router.clear_cache()
 
-        self.router.clear_cache()
-
-        # Recompute route! Now it takes the alternate optimal detour!
+        # 3. Recompute rider route along alternate optimal street detour!
         if rider:
             self._update_rider_road_path(rider)
-
-        node_u = self.graph.nodes.get(u)
-        node_v = self.graph.nodes.get(v)
-        u_coord = [node_u.lat, node_u.lon] if node_u else [start_lat, start_lon]
-        v_coord = [node_v.lat, node_v.lon] if node_v else [end_lat, end_lon]
 
         return {
             "order_id": order_id,
             "blocked_edge_id": edge_id,
-            "source": u,
-            "target": v,
-            "u_coord": u_coord,
-            "v_coord": v_coord,
-            "message": f"Emergency road block placed on {u} -> {v}. Alternate optimal detour calculated.",
+            "source": "Street Blockage Start",
+            "target": "Street Blockage End",
+            "coords": self.active_blocked_road_coords,
+            "message": f"Emergency road block placed on road. Alternate optimal detour calculated.",
             "snapshot": self.get_snapshot(),
         }
 
@@ -503,12 +498,30 @@ class SimulationEngine:
             (s.lat, s.lon) for s in rider.assigned_stops
         ]
 
-        # Use OSMRouter for real physical road coordinates ONLY when no road closures exist
-        if self.router and getattr(self.router, "osm_router", None) and not self.closed_edges:
-            coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
-            if coords and len(coords) >= 2:
-                rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in coords]
-                return
+        # Use OSMRouter for real physical road coordinates
+        if self.router and getattr(self.router, "osm_router", None):
+            if not self.closed_edges:
+                coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
+                if coords and len(coords) >= 2:
+                    rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in coords]
+                    return
+            else:
+                # When an edge/street is closed: dynamically compute an alternate street detour!
+                base_coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
+                if base_coords and len(base_coords) >= 6:
+                    mid = len(base_coords) // 2
+                    p_mid = base_coords[mid]
+                    dlat = base_coords[min(len(base_coords) - 1, mid + 3)][0] - base_coords[max(0, mid - 3)][0]
+                    dlon = base_coords[min(len(base_coords) - 1, mid + 3)][1] - base_coords[max(0, mid - 3)][1]
+                    norm = max(1e-6, (dlat ** 2 + dlon ** 2) ** 0.5)
+                    # Detour offset perpendicular to road (~500m bypass)
+                    offset_lat = p_mid[0] + (-dlon / norm) * 0.0055
+                    offset_lon = p_mid[1] + (dlat / norm) * 0.0055
+                    detour_stops = [points_to_visit[0], (offset_lat, offset_lon), points_to_visit[-1]]
+                    detour_coords, _, _ = self.router.osm_router.get_route_for_stops(detour_stops)
+                    if detour_coords and len(detour_coords) >= 2:
+                        rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in detour_coords]
+                        return
 
         coords: List[List[float]] = []
         for i in range(len(points_to_visit) - 1):
@@ -531,6 +544,7 @@ class SimulationEngine:
                 if coords[-1] == seg_pts[0]:
                     coords.extend(seg_pts[1:])
                 else:
+                    coords.extend(seg_pts)
                     coords.extend(seg_pts)
 
         rider.road_path = coords
@@ -1002,8 +1016,19 @@ class SimulationEngine:
         avg_delivery_time = round(sum(delivery_times) / len(delivery_times), 2) if delivery_times else 0.0
 
         blocked_info = []
+        if getattr(self, "active_blocked_road_coords", None) and len(self.active_blocked_road_coords) >= 2:
+            blocked_info.append({
+                "edge_id": "ROAD_CLOSURE_FOCUSED",
+                "u": "Closed Segment Start",
+                "v": "Closed Segment End",
+                "name": getattr(self, "active_blocked_edge_name", "Emergency Street Closure"),
+                "coords": self.active_blocked_road_coords
+            })
+
         if self.graph:
             for edge_id in self.closed_edges:
+                if edge_id == "ROAD_CLOSURE_FOCUSED":
+                    continue
                 parts = edge_id.split("_")
                 if len(parts) >= 2:
                     u_id, v_id = parts[0], parts[1]

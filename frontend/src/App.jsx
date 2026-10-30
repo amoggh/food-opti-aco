@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Navbar from './components/Navbar';
 import MetricsHUD from './components/MetricsHUD';
 import DeliveryMap from './components/Map/DeliveryMap';
+import DemoMap from './components/Map/DemoMap';
 import OrderQueue from './components/Orders/OrderQueue';
 import FleetStatus from './components/Fleet/FleetStatus';
 import ACOOptimizer from './components/ACO/ACOOptimizer';
@@ -314,6 +315,7 @@ export default function App() {
               focusedOrderId={focusedOrderId}
               onSelectOrder={handleSelectOrder}
               onRefreshState={() => api.getSimState().then(setSimState).catch(console.warn)}
+              onOpenDemo={() => setActiveTab('demo')}
             />
 
             <div className="sidebar-panels">
@@ -331,6 +333,11 @@ export default function App() {
               />
             </div>
           </div>
+        )}
+
+        {/* Tab 1.5: Clean Turn-by-Turn Demo Map */}
+        {activeTab === 'demo' && (
+          <DemoMap />
         )}
 
         {/* Tab 2: ACO Convergence & Hyperparameters */}

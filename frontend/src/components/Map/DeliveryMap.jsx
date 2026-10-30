@@ -12,7 +12,8 @@ import {
   Navigation,
   Layers,
   Eye,
-  EyeOff
+  EyeOff,
+  Sparkles
 } from 'lucide-react';
 
 // Minimalist palette for courier lines
@@ -36,7 +37,8 @@ export default function DeliveryMap({
   onSelectRider = () => {},
   focusedOrderId = null,
   onSelectOrder = () => {},
-  onRefreshState = () => {}
+  onRefreshState = () => {},
+  onOpenDemo = null
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -273,36 +275,37 @@ export default function DeliveryMap({
 
       // 1. Render from structured blockedEdgesInfo if provided
       (blockedEdgesInfo || []).forEach(b => {
-        if (b && b.coords && b.coords.length === 2) {
-          const uCoord = b.coords[0];
-          const vCoord = b.coords[1];
-          const key = `${b.u}_${b.v}`;
+        if (b && b.coords && b.coords.length >= 2) {
+          const key = b.edge_id || `${b.u}_${b.v}`;
           if (renderedBlocks.has(key)) return;
           renderedBlocks.add(key);
-          renderedBlocks.add(`${b.v}_${b.u}`);
+          if (b.u && b.v) {
+            renderedBlocks.add(`${b.u}_${b.v}`);
+            renderedBlocks.add(`${b.v}_${b.u}`);
+          }
 
-          L.polyline([uCoord, vCoord], {
+          L.polyline(b.coords, {
             color: '#ef4444',
-            weight: 7,
+            weight: 8,
             opacity: 0.95,
-            dashArray: '5, 5'
+            dashArray: '6, 6'
           }).bindPopup(`
             <div style="font-size: 12px; font-family: var(--font-sans); color: #ef4444;">
               <strong>⛔ Emergency Road Block Active</strong><br/>
-              Segment: ${b.u} &rarr; ${b.v}<br/>
+              Segment: ${b.name || b.edge_id || `${b.u} &rarr; ${b.v}`}<br/>
               Status: Impassable to vehicles
             </div>
           `).addTo(roadblockLayer);
 
-          const midLat = (uCoord[0] + vCoord[0]) / 2;
-          const midLon = (uCoord[1] + vCoord[1]) / 2;
+          const midIdx = Math.floor(b.coords.length / 2);
+          const midPt = b.coords[midIdx];
           const barrierIcon = L.divIcon({
             className: 'custom-barrier-icon',
             html: `<div style="background:#ef4444; color:#ffffff; font-size:11px; border-radius:4px; padding:2px 6px; border:1px solid #ffffff; font-weight:700; box-shadow:0 0 10px rgba(239,68,68,0.9); white-space:nowrap;">⛔ ROAD CLOSED</div>`,
             iconSize: [85, 22],
             iconAnchor: [42, 11]
           });
-          L.marker([midLat, midLon], { icon: barrierIcon }).addTo(roadblockLayer);
+          L.marker(midPt, { icon: barrierIcon }).addTo(roadblockLayer);
         }
       });
 
@@ -540,6 +543,18 @@ export default function DeliveryMap({
               </option>
             ))}
           </select>
+
+          {onOpenDemo && (
+            <button 
+              className="btn-shadcn primary"
+              style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              onClick={onOpenDemo}
+              title="Open the interactive Demo Map with real Bangalore road polylines & roadblocks"
+            >
+              <Sparkles size={12} />
+              <span>Demo Map</span>
+            </button>
+          )}
         </div>
       </div>
 

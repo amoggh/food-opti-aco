@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Layers,
   Crosshair,
-  X
+  X,
+  Sparkles
 } from 'lucide-react';
 
 export default function Navbar({
@@ -137,7 +138,16 @@ export default function Navbar({
           onClick={() => setActiveTab('map')}
         >
           <MapPin size={14} />
-          <span>Operations & Map</span>
+          <span>Operations &amp; Map</span>
+        </button>
+
+        <button 
+          className={`tab-btn ${activeTab === 'demo' ? 'active' : ''}`}
+          onClick={() => setActiveTab('demo')}
+          style={{ position: 'relative' }}
+        >
+          <Sparkles size={14} style={{ color: activeTab === 'demo' ? '#fafafa' : '#38bdf8' }} />
+          <span>Turn-by-Turn Demo</span>
         </button>
 
         <button 

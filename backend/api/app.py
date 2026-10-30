@@ -228,8 +228,6 @@ async def clear_road_closures():
     snapshot = sim_engine.get_snapshot()
     await broadcast_state(snapshot)
     return {"message": "All road closures cleared", "snapshot": snapshot, "state": snapshot, **snapshot}
-    await broadcast_state(snapshot)
-    return {"message": "All road closures cleared", "snapshot": snapshot, "state": snapshot, **snapshot}
 
 
 @app.post("/api/simulation/events/rider-unavailable")
