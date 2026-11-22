@@ -11,7 +11,7 @@
   --surface: #121215;
   --surface-raised: #18181b;
   --surface-hover: #222226;
-  
+
   --border: #27272a;
   --border-subtle: #1f1f23;
   --border-hover: #3f3f46;
@@ -19,7 +19,7 @@
 
   --primary: #fafafa;
   --primary-foreground: #09090b;
-  
+
   --muted: #18181b;
   --muted-foreground: #a1a1aa;
   --subtle-foreground: #71717a;
@@ -41,13 +41,16 @@
   --font-mono: 'Geist Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
@@ -64,13 +67,16 @@ html, body {
   width: 5px;
   height: 5px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
+
 ::-webkit-scrollbar-thumb {
   background: #27272a;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
@@ -581,12 +587,41 @@ html, body {
   border: 1px solid transparent;
 }
 
-.status-pill.placed { background: #27272a; color: #a1a1aa; border-color: #3f3f46; }
-.status-pill.preparing { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
-.status-pill.ready { background: rgba(99, 102, 241, 0.12); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.3); }
-.status-pill.picked_up { background: rgba(14, 165, 233, 0.12); color: #7dd3fc; border-color: rgba(14, 165, 233, 0.3); }
-.status-pill.delivered { background: rgba(16, 185, 129, 0.12); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
-.status-pill.late { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); }
+.status-pill.placed {
+  background: #27272a;
+  color: #a1a1aa;
+  border-color: #3f3f46;
+}
+
+.status-pill.preparing {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-pill.ready {
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.status-pill.picked_up {
+  background: rgba(14, 165, 233, 0.12);
+  color: #7dd3fc;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.status-pill.delivered {
+  background: rgba(16, 185, 129, 0.12);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-pill.late {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.35);
+}
 
 /* Progress bar minimal */
 .progress-bar-bg {
@@ -754,6 +789,12 @@ html, body {
   font-weight: 500;
 }
 
+/* Operations map: "Block a road" mode */
+.road-block-mode.leaflet-container,
+.road-block-mode .leaflet-interactive {
+  cursor: crosshair !important;
+}
+
 /* =====================================================================
    TURN-BY-TURN DEMO ANIMATIONS
    ===================================================================== */
@@ -762,13 +803,14 @@ html, body {
     transform: scale(0.85);
     opacity: 0.85;
   }
+
   70% {
     transform: scale(2.2);
     opacity: 0;
   }
+
   100% {
     transform: scale(2.4);
     opacity: 0;
   }
 }
-

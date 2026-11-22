@@ -1,14 +1,17 @@
 """ACO Colony and top-level Optimization Engine."""
 import random
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from backend.config.aco_config import ACOConfig
 from backend.aco.ant import Ant
 from backend.aco.cost import CostEvaluator
+from backend.aco.local_search import RelocateLocalSearch
 from backend.aco.models import ACOTaskNode, DeliveryPlan
 from backend.aco.pheromone import PheromoneMatrix
+from backend.baselines.greedy import GreedyPrioritySolver
 from backend.preprocessing.pipeline import (
     ProcessedCustomer,
     ProcessedOrder,
@@ -26,6 +29,8 @@ class OptimizationResult:
     convergence_history: List[Dict[str, Any]] = field(default_factory=list)
     runtime_seconds: float = 0.0
     config: Optional[ACOConfig] = None
+    # Cost after the relocate local-search polish (None if it found no improvement)
+    local_search_entry: Optional[Dict[str, Any]] = None
 
 
 class ACOEngine:
@@ -35,9 +40,13 @@ class ACOEngine:
         self,
         config: Optional[ACOConfig] = None,
         routing_engine: Optional[RoutingEngine] = None,
+        graph_matrices: bool = True,
     ):
         self.config = config or ACOConfig()
         self.routing_engine = routing_engine
+        # False: straight-line × road-detour factor for travel matrices (fast, for live dispatch);
+        # the routing engine is then used only for the final tour geometry.
+        self.graph_matrices = graph_matrices
         self.rng = random.Random(self.config.random_seed)
 
         self.task_nodes: Dict[str, ACOTaskNode] = {}
@@ -132,7 +141,7 @@ class ACOEngine:
                     self.distance_matrix[(u.node_id, v.node_id)] = 0.0
                     self.time_matrix[(u.node_id, v.node_id)] = 0.0
                 elif (u.node_id, v.node_id) not in self.distance_matrix:
-                    if self.routing_engine:
+                    if self.routing_engine and self.graph_matrices:
                         route = self.routing_engine.find_route_between_coordinates(
                             u.lat, u.lon, v.lat, v.lon, criterion="time", use_real_roads=False
                         )
@@ -140,6 +149,8 @@ class ACOEngine:
                         ttime = route.total_time_minutes
                     else:
                         dist = haversine_distance_km(u.lat, u.lon, v.lat, v.lon)
+                        if not self.graph_matrices:
+                            dist *= 1.35  # typical urban road-detour factor
                         ttime = (dist / avg_city_speed_kmh) * 60.0
 
                     self.distance_matrix[(u.node_id, v.node_id)] = dist
@@ -150,6 +161,12 @@ class ACOEngine:
         # 4. Initialize Pheromone Matrix
         node_ids = list(self.task_nodes.keys())
         self.pheromones = PheromoneMatrix(node_ids=node_ids, config=self.config)
+
+    def _update_bounds(self, best_cost: float, reset: bool = False) -> None:
+        """MMAS bounds: tau_max = 1 / (rho * best_cost); tau_min = tau_max / (2n)."""
+        tau_max = 1.0 / (self.config.evaporation_rate * max(best_cost, 1.0))
+        tau_min = tau_max / (2.0 * max(1, self.pheromones.n))
+        self.pheromones.set_bounds(tau_min, tau_max, reset=reset)
 
     def optimize(self, verbose: bool = False) -> OptimizationResult:
         """Executes the Ant Colony Optimization loop over the configured number of iterations."""
@@ -162,6 +179,26 @@ class ACOEngine:
 
         if self.config.random_seed is not None:
             self.rng = random.Random(self.config.random_seed)
+
+        cfg = self.config
+        if cfg.dynamic_bounds:
+            self.pheromones.deposit_scale = 1.0
+
+        # Seed the incumbent with the greedy-priority plan and calibrate MMAS bounds to it
+        if cfg.seed_with_greedy:
+            global_best_plan = GreedyPrioritySolver(
+                task_nodes=self.task_nodes,
+                pickup_nodes=self.pickup_nodes,
+                dropoff_nodes=self.dropoff_nodes,
+                rider_start_nodes=self.rider_start_nodes,
+                rider_capacities=self.rider_capacities,
+                distance_matrix=self.distance_matrix,
+                time_matrix=self.time_matrix,
+                cost_evaluator=self.evaluator,
+            ).solve(self.order_ids)
+            if cfg.dynamic_bounds:
+                self._update_bounds(global_best_plan.fitness_cost, reset=True)
+            self.pheromones.deposit(global_best_plan, is_best=True)
 
         for it in range(1, self.config.num_iterations + 1):
             iteration_plans: List[DeliveryPlan] = []
@@ -193,7 +230,10 @@ class ACOEngine:
             avg_cost = sum(p.fitness_cost for p in iteration_plans) / len(iteration_plans)
 
             if global_best_plan is None or iter_best.fitness_cost < global_best_plan.fitness_cost:
+                first_best = global_best_plan is None
                 global_best_plan = iter_best
+                if cfg.dynamic_bounds:
+                    self._update_bounds(global_best_plan.fitness_cost, reset=first_best)
 
             # 3. Pheromone updates (evaporation + deposit + elitist reinforcement)
             self.pheromones.evaporate()
@@ -227,14 +267,43 @@ class ACOEngine:
                     f"Unserved={global_best_plan.unserved_orders_count}"
                 )
 
+        # Polish the final incumbent with relocate local search
+        local_search_entry: Optional[Dict[str, Any]] = None
+        if global_best_plan is not None and cfg.local_search and cfg.local_search_time_limit_s > 0:
+            polished = RelocateLocalSearch(
+                config=cfg,
+                pickup_nodes=self.pickup_nodes,
+                dropoff_nodes=self.dropoff_nodes,
+                rider_start_nodes=self.rider_start_nodes,
+                rider_capacities=self.rider_capacities,
+                distance_matrix=self.distance_matrix,
+                time_matrix=self.time_matrix,
+                evaluator=self.evaluator,
+            ).improve(global_best_plan, self.order_ids, cfg.local_search_time_limit_s)
+            if polished is not global_best_plan:
+                local_search_entry = {
+                    "iteration": "local_search",
+                    "best_cost": polished.fitness_cost,
+                    "best_distance_km": polished.total_distance_km,
+                    "best_time_min": polished.total_delivery_time_min,
+                    "late_orders": polished.late_orders_count,
+                    "unserved": polished.unserved_orders_count,
+                }
+            global_best_plan = polished
+
         if global_best_plan and self.routing_engine:
-            for tour in global_best_plan.tours.values():
-                stops = [(s.lat, s.lon) for s in tour.stops]
-                if hasattr(self.routing_engine, "osm_router") and self.routing_engine.osm_router:
-                    coords, _, _ = self.routing_engine.osm_router.get_route_for_stops(stops)
+            osm = getattr(self.routing_engine, "osm_router", None)
+            active_tours = [t for t in global_best_plan.tours.values() if len(t.stops) >= 2]
+            if osm and active_tours:
+                # Fetch every tour's road geometry concurrently (one OSRM request each)
+                with ThreadPoolExecutor(max_workers=8) as pool:
+                    geoms = list(pool.map(lambda t: osm.get_route_for_stops([(s.lat, s.lon) for s in t.stops]), active_tours))
+                for tour, (coords, _, _) in zip(active_tours, geoms):
                     if coords and len(coords) >= 2:
                         tour.road_path_coordinates = coords
-                        continue
+            for tour in global_best_plan.tours.values():
+                if tour.road_path_coordinates or len(tour.stops) < 2:
+                    continue
 
                 coords = []
                 for idx in range(len(tour.stops) - 1):
@@ -259,4 +328,5 @@ class ACOEngine:
             convergence_history=convergence_history,
             runtime_seconds=round(elapsed, 3),
             config=self.config,
+            local_search_entry=local_search_entry,
         )

@@ -76,6 +76,10 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
           iteration: idx + 1,
           cost: parseFloat(cost.toFixed(1))
         }));
+        if (result.local_search_cost != null) {
+          // Extra point: relocate local search applied to the colony's best plan
+          historyData.push({ iteration: 'Polish', cost: parseFloat(result.local_search_cost.toFixed(1)) });
+        }
         setConvergenceHistory(historyData);
       }
 
@@ -93,7 +97,7 @@ export default function ACOOptimizer({ bestPlan, onOptimizationComplete }) {
 
   const currentBestCost = convergenceHistory.length > 0 
     ? convergenceHistory[convergenceHistory.length - 1].cost 
-    : bestPlan?.best_cost?.toFixed(1) || '3,121.3';
+    : (bestPlan?.fitness_cost ?? bestPlan?.best_cost)?.toFixed(1) || '—';
 
   return (
     <div className="aco-view-layout">

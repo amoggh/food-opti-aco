@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import demoScenariosData from '../../data/demoScenarios.json';
@@ -70,59 +70,204 @@ function getPointAtProgress(points, distData, progress) {
   return { coord: [lat, lon], idx };
 }
 
+/*
+ * Turn-by-turn ACO demo.
+ * Three real-road routes (precomputed from OSRM, see backend/tools/build_demo_routes.py) join the
+ * restaurant to the customer. A small ant colony picks the best one by
+ *   cost = distance + 1.5·time + 0.5·minutes-in-bag + 5·minutes-past-the-40-min-freshness-limit.
+ * Blocking a route re-runs the colony from the courier's *current* position; the courier then
+ * follows real roads (back along its current road if needed) to join the best remaining route.
+ */
+
+const SIM_MIN_PER_SEC = 0.25;  // simulated minutes per real second at 1x
+const FRESH_LIMIT_MIN = 40;    // food is "cold" after this long in the bag
+const JOIN_KM = 0.03;          // two routes "meet" where their points are within 30 m
+const COLONY = { ants: 12, iterations: 30, alpha: 1, beta: 2, rho: 0.3, tickMs: 55 };
+
+// ---------- geometry helpers ----------
+function hav(a, b) {
+  const r = 6371.0088;
+  const toRad = (x) => (x * Math.PI) / 180;
+  const dLat = toRad(b[0] - a[0]);
+  const dLon = toRad(b[1] - a[1]);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLon / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(x));
+}
+
+function cumulative(points) {
+  const cum = [0];
+  for (let i = 1; i < points.length; i++) cum.push(cum[i - 1] + hav(points[i - 1], points[i]));
+  return cum;
+}
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function costOf(distKm, timeMin, bagMin) {
+  const inBag = bagMin + timeMin;
+  const parts = {
+    distance: distKm,
+    time: 1.5 * timeMin,
+    fresh: 0.5 * inBag,
+    cold: 5 * Math.max(0, inBag - FRESH_LIMIT_MIN),
+  };
+  return { ...parts, total: parts.distance + parts.time + parts.fresh + parts.cold };
+}
+
+const foodTempC = (bagMin) => Math.max(20, 85 - 35 * (bagMin / FRESH_LIMIT_MIN));
+
+// ---------- scenario preprocessing ----------
+function prepareScenario(sc) {
+  const routes = {};
+  sc.routes.forEach((r) => {
+    const cum = cumulative(r.points);
+    const total = cum[cum.length - 1];
+    routes[r.id] = { ...r, cum, total, speed: total / r.duration_min }; // km per sim-minute
+  });
+  // near[R][T][j] = index k on T where R's point j meets T (or -1). Among T points within JOIN_KM,
+  // take the one at the same progress along the shared road, so a route that loops back past
+  // an earlier spot cannot be "joined" half-way through.
+  const near = {};
+  Object.values(routes).forEach((R) => {
+    near[R.id] = {};
+    Object.values(routes).forEach((T) => {
+      if (T.id === R.id) return;
+      near[R.id][T.id] = R.points.map((p, j) => {
+        let best = -1;
+        T.points.forEach((q, k) => {
+          if (hav(p, q) > JOIN_KM) return;
+          if (best < 0 || Math.abs(T.cum[k] - R.cum[j]) < Math.abs(T.cum[best] - R.cum[j])) best = k;
+        });
+        return best;
+      });
+    });
+  });
+  return { ...sc, routesById: routes, near };
+}
+
+// Courier position on a composite path -> (route, fractional index on that route)
+function anchorOf(path, travelled) {
+  const { cum, meta } = path;
+  let s = 0;
+  while (s < cum.length - 2 && cum[s + 1] < travelled) s++;
+  const a = meta[s];
+  const b = meta[s + 1] || a;
+  if (a.route === b.route) {
+    const segLen = cum[s + 1] - cum[s] || 1;
+    const t = Math.min(1, Math.max(0, (travelled - cum[s]) / segLen));
+    return { route: a.route, f: a.idx + (b.idx - a.idx) * t, seg: s };
+  }
+  return { route: b.route, f: b.idx, seg: s };
+}
+
+function pointAt(path, travelled) {
+  const { points, cum } = path;
+  if (travelled <= 0) return points[0];
+  if (travelled >= cum[cum.length - 1]) return points[points.length - 1];
+  let s = 0;
+  while (s < cum.length - 2 && cum[s + 1] < travelled) s++;
+  const t = (travelled - cum[s]) / (cum[s + 1] - cum[s] || 1);
+  return [points[s][0] + (points[s + 1][0] - points[s][0]) * t, points[s][1] + (points[s + 1][1] - points[s][1]) * t];
+}
+
+function isBlockedAhead(R, f, blocked) {
+  // Forward travel on R is cut if R is blocked and the courier has not yet reached the closed stretch
+  return blocked.has(R.id) && f < R.block.start_idx;
+}
+
+// Best plan from the courier's position (on route R at fractional index f) onto target route T.
+function planOnto(sc, startPt, R, f, T, blocked) {
+  const fwdLimit = isBlockedAhead(R, f, blocked) ? R.block.start_idx - 1 : R.points.length - 1;
+  const cumAt = (idx) => R.cum[Math.floor(idx)] + (R.cum[Math.ceil(idx)] - R.cum[Math.floor(idx)]) * (idx % 1);
+  const here = cumAt(f);
+
+  if (T.id === R.id) {
+    if (fwdLimit < R.points.length - 1) return null;
+    return { target: T.id, j: null, k: null, connectorKm: 0, remainingKm: R.total - here, timeMin: (R.total - here) / R.speed };
+  }
+
+  let best = null;
+  const table = sc.near[R.id][T.id];
+  for (let j = 0; j < R.points.length; j++) {
+    const k = table[j];
+    if (k < 0) continue;
+    if (j > f && j > fwdLimit) continue;               // can't drive through the closure
+    const connectorKm = Math.abs(R.cum[j] - here);
+    const remainingKm = T.total - T.cum[k];
+    const timeMin = connectorKm / R.speed + remainingKm / T.speed;
+    if (!best || timeMin < best.timeMin) best = { target: T.id, j, k, connectorKm, remainingKm, timeMin };
+  }
+  return best;
+}
+
+function buildPath(sc, startPt, R, f, plan) {
+  const T = sc.routesById[plan.target];
+  if (plan.full) {
+    return { points: T.points, meta: T.points.map((_, i) => ({ route: T.id, idx: i })), cum: T.cum, target: T.id, backtrackKm: 0 };
+  }
+  const points = [startPt];
+  const meta = [{ route: R.id, idx: f }];
+  const push = (route, idx) => {
+    const p = sc.routesById[route].points[idx];
+    const last = points[points.length - 1];
+    if (last[0] === p[0] && last[1] === p[1]) return;
+    points.push(p);
+    meta.push({ route, idx });
+  };
+  if (plan.j === null) {
+    for (let i = Math.ceil(f); i < R.points.length; i++) push(R.id, i);
+  } else {
+    if (plan.j >= f) for (let i = Math.ceil(f); i <= plan.j; i++) push(R.id, i);
+    else for (let i = Math.floor(f); i >= plan.j; i--) push(R.id, i);
+    for (let k = plan.k; k < T.points.length; k++) push(T.id, k);
+  }
+  return { points, meta, cum: cumulative(points), target: T.id, backtrackKm: plan.j !== null && plan.j < f ? plan.connectorKm : 0 };
+}
+
+// ---------- component ----------
 export default function DemoMap() {
-  const mapContainerRef = useRef(null);
+  const [scenarioKey, setScenarioKey] = useState('scenario_1');
+  const sc = useMemo(() => prepareScenario(demoRoutes[scenarioKey]), [scenarioKey]);
+  const routeIds = useMemo(() => sc.routes.map((r) => r.id), [sc]);
+
+  const [blocked, setBlocked] = useState(() => new Set());
+  const [share, setShare] = useState({});            // normalised pheromone per route
+  const [iteration, setIteration] = useState(0);
+  const [phase, setPhase] = useState('idle');        // idle | optimizing | driving | paused | delivered | stuck
+  const [speed, setSpeed] = useState(1);
+  const [costs, setCosts] = useState({});            // ACO cost per route from the current position
+  const [activeRoute, setActiveRoute] = useState(null);
+  const [log, setLog] = useState([]);
+  const [, setTick] = useState(0);
+
+  const mapEl = useRef(null);
   const mapRef = useRef(null);
-  const animationFrameRef = useRef(null);
-  const courierMarkerRef = useRef(null);
-
-  // Scenarios: scenario_1, scenario_2, scenario_3
-  const [selectedScenarioKey, setSelectedScenarioKey] = useState('scenario_1');
-  const scenario = demoScenariosData[selectedScenarioKey] || demoScenariosData.scenario_1;
-
-  // Roadblock state
-  const [roadblockActive, setRoadblockActive] = useState(false);
-
-  // Playback state
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1); // 1x, 2x, 5x
-  const [courierProgress, setCourierProgress] = useState(0); // 0.0 to 1.0
-
-  // Animation refs to avoid closure stalls
-  const progressRef = useRef(0);
-  const isPlayingRef = useRef(false);
+  const layers = useRef({});
+  const courier = useRef({ path: null, travelled: 0, simMin: 0 });
+  const phaseRef = useRef('idle');
   const speedRef = useRef(1);
-  const roadblockActiveRef = useRef(false);
-  const activePointsRef = useRef([]);
-  const distDataRef = useRef({ dists: [0], total: 0 });
 
   // Layers
   const layersRef = useRef({
     primaryRoute: null,
     detourRoute: null,
-    traveledTrail: null,
     roadblockSegment: null,
     roadblockMarkers: null,
     restaurantMarker: null,
-    customerMarker: null,
-    courierLayer: null
+    customerMarker: null
   });
 
   // Calculate active points and metrics
   const activeRoute = roadblockActive ? scenario.detour : scenario.primary;
   const activePoints = activeRoute.points;
-
-  // Physical road distances for uniform velocity
-  const distData = useMemo(() => {
-    return getRouteDistances(activePoints);
-  }, [activePoints]);
-
-  // Keep refs in sync for the animation loop
-  useEffect(() => {
-    activePointsRef.current = activePoints;
-    distDataRef.current = distData;
-    roadblockActiveRef.current = roadblockActive;
-  }, [activePoints, distData, roadblockActive]);
 
   // Identify where detour diverges from primary
   const divergenceIndex = useMemo(() => {
@@ -135,70 +280,101 @@ export default function DemoMap() {
     return Math.max(1, idx - 1);
   }, [scenario]);
 
-  // Sync state to refs
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
+  // ----- block / unblock -----
+  const toggleBlock = useCallback((id) => {
+    if (phaseRef.current === 'optimizing' || phaseRef.current === 'delivered') return;
+    const next = new Set(blockedRef.current);
+    const wasBlocked = next.has(id);
+    if (wasBlocked) next.delete(id); else next.add(id);
+    setBlocked(next);
+    blockedRef.current = next;
 
-  useEffect(() => {
-    speedRef.current = playbackSpeed;
-  }, [playbackSpeed]);
+    const c = courier.current;
+    if (wasBlocked) {
+      if (phaseRef.current === 'stuck') runColony(next, `Route ${id} reopened.`);
+      else addLog('info', `Route ${id} reopened.`);
+      return;
+    }
 
-  useEffect(() => {
-    progressRef.current = courierProgress;
-  }, [courierProgress]);
-
-  // 1. Initialize Leaflet Map (Free OSM with Shadcn Dark Mode CSS Filter, Zero API Key required)
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
-
-    const map = L.map(mapContainerRef.current, {
-      center: scenario.center,
-      zoom: scenario.zoom,
-      zoomControl: false
+    addLog('danger', `Road closure reported on Route ${id}.`);
+    if (!c.path) return;                                            // not dispatched yet: colony runs on Play
+    const a = anchorOf(c.path, c.travelled);
+    const aheadHits = c.path.meta.some((m, i) => {
+      if (c.path.cum[i] <= c.travelled) return false;
+      const T = sc.routesById[m.route];
+      if (!next.has(m.route) || m.idx < T.block.start_idx || m.idx > T.block.end_idx) return false;
+      return !(m.route === a.route && a.f >= T.block.start_idx);     // already inside/past it
     });
+    if (aheadHits) {
+      runColony(next, `Closure is ahead of the courier on Route ${id}.`);
+    } else if (a.route === id) {
+      addLog('info', `Courier is already past the closure on Route ${id} — no change needed.`);
+    } else {
+      addLog('info', `Courier is not using Route ${id} — current route unaffected.`);
+    }
+  }, [sc, addLog, runColony]);
+  onRouteClick.current = toggleBlock;
 
+  // ----- controls -----
+  const resetState = useCallback(() => {
+    clearInterval(colonyTimer.current);
+    courier.current = { path: null, travelled: 0, simMin: 0, trail: null };
+    setBlocked(new Set());
+    blockedRef.current = new Set();
+    setShare(Object.fromEntries(routeIds.map((id) => [id, 1 / routeIds.length])));
+    setCosts({});
+    setIteration(0);
+    setActiveRoute(null);
+    setPhase('idle');
+    setLog([]);
+  }, [routeIds]);
+
+  useEffect(() => { resetState(); }, [scenarioKey, resetState]);
+
+  const handlePlay = () => {
+    if (phase === 'idle') runColony(blockedRef.current, 'Order picked up.');
+    else if (phase === 'driving') setPhase('paused');
+    else if (phase === 'paused') setPhase('driving');
+  };
+
+  // ----- map setup -----
+  useEffect(() => {
+    if (!mapEl.current || mapRef.current) return;
+    const map = L.map(mapEl.current, { zoomControl: false });
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    const osmDark = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19,
       className: 'dark-tiles'
     });
     osmDark.addTo(map);
 
-    // Create layer groups in strict rendering order
+    // Create layer groups
     layersRef.current.primaryRoute = L.layerGroup().addTo(map);
     layersRef.current.detourRoute = L.layerGroup().addTo(map);
     layersRef.current.roadblockSegment = L.layerGroup().addTo(map);
     layersRef.current.roadblockMarkers = L.layerGroup().addTo(map);
-    layersRef.current.traveledTrail = L.layerGroup().addTo(map);
     layersRef.current.restaurantMarker = L.layerGroup().addTo(map);
     layersRef.current.customerMarker = L.layerGroup().addTo(map);
-    layersRef.current.courierLayer = L.layerGroup().addTo(map);
 
     mapRef.current = map;
 
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      if (courierMarkerRef.current) {
-        courierMarkerRef.current = null;
-      }
       map.remove();
       mapRef.current = null;
     };
   }, []);
 
-  // 2. Center and Zoom on Scenario change
+  // fit + static markers per scenario
   useEffect(() => {
     if (!mapRef.current) return;
-    mapRef.current.flyTo(scenario.center, scenario.zoom, { duration: 0.8 });
+    mapRef.current.flyTo(scenario.center, scenario.zoom, { duration: 1.0 });
     // Reset playback on scenario switch
     setIsPlaying(false);
     isPlayingRef.current = false;
     setCourierProgress(0);
     progressRef.current = 0;
-    setRoadblockActive(false);
   }, [selectedScenarioKey]);
 
   // 3. Render Static Markers: Restaurant and Customer
@@ -247,67 +423,14 @@ export default function DemoMap() {
       iconSize: [36, 36],
       iconAnchor: [18, 18]
     });
+    L.marker([sc.restaurant.lat, sc.restaurant.lon], { icon: icon('🍕', '#b45309') })
+      .bindTooltip(`<b>${sc.restaurant.name}</b><br/>Pickup`, { direction: 'top' }).addTo(g);
+    L.marker([sc.customer.lat, sc.customer.lon], { icon: icon('🏠', '#15803d') })
+      .bindTooltip(`<b>${sc.customer.name}</b><br/>Drop-off · SLA ${sc.customer.deadline} min`, { direction: 'top' }).addTo(g);
+    return () => clearTimeout(t);
+  }, [sc]);
 
-    const restMarker = L.marker([scenario.restaurant.lat, scenario.restaurant.lon], { icon: restIcon });
-    restMarker.bindPopup(`
-      <div style="font-size: 12px; font-family: var(--font-sans); color: #fafafa; line-height: 1.4;">
-        <strong style="color: #38bdf8; font-size: 13px;">🏪 Source Restaurant</strong><br/>
-        <strong>${scenario.restaurant.name}</strong><br/>
-        <span style="color: #a1a1aa;">Order Prep: ${scenario.restaurant.prep_time} min</span>
-      </div>
-    `);
-    restMarker.addTo(restLayer);
-
-    // Destination Customer Marker
-    const custIcon = L.divIcon({
-      className: 'demo-cust-marker',
-      html: `
-        <div style="
-          background: #18181b;
-          border: 2px solid #10b981;
-          color: #fafafa;
-          width: 36px;
-          height: 36px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 0 18px rgba(16, 185, 129, 0.7);
-          font-size: 17px;
-          cursor: pointer;
-          position: relative;
-        ">
-          📍
-          <span style="
-            position: absolute;
-            top: -7px;
-            right: -7px;
-            background: #059669;
-            color: white;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 1px 5px;
-            border-radius: 4px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.5);
-          ">DEST</span>
-        </div>
-      `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
-    });
-
-    const custMarker = L.marker([scenario.customer.lat, scenario.customer.lon], { icon: custIcon });
-    custMarker.bindPopup(`
-      <div style="font-size: 12px; font-family: var(--font-sans); color: #fafafa; line-height: 1.4;">
-        <strong style="color: #10b981; font-size: 13px;">🎯 Customer Destination</strong><br/>
-        <strong>${scenario.customer.name}</strong><br/>
-        <span style="color: #a1a1aa;">Delivery SLA: &le; ${scenario.customer.deadline} min</span>
-      </div>
-    `);
-    custMarker.addTo(custLayer);
-  }, [scenario]);
-
-  // 4. Render Routes & Roadblocks Directly Along Physical Street Geometry
+  // route lines (thickness = pheromone) + closures
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -328,18 +451,17 @@ export default function DemoMap() {
       // Ambient glow
       L.polyline(scenario.primary.points, {
         color: '#38bdf8',
-        weight: 8,
-        opacity: 0.25,
+        weight: 9,
+        opacity: 0.3,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(primaryLayer);
 
-      // Planned base road polyline (subtle dashed so traveled trail pops)
+      // Main crisp road polyline
       L.polyline(scenario.primary.points, {
         color: '#38bdf8',
-        weight: 4.0,
-        opacity: 0.45,
-        dashArray: '5, 7',
+        weight: 4.5,
+        opacity: 0.95,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(primaryLayer);
@@ -350,22 +472,22 @@ export default function DemoMap() {
       // & ACO DETOUR SPRINGS INTO ACTION
       // ==========================================
 
-      // 1. Initial approach up to the diversion junction
+      // 1. Draw the initial approach up to the diversion junction in solid cyan
       const approachPts = scenario.primary.points.slice(0, divergenceIndex + 1);
       if (approachPts.length >= 2) {
         L.polyline(approachPts, {
           color: '#38bdf8',
-          weight: 4.0,
-          opacity: 0.7,
+          weight: 4.5,
+          opacity: 0.85,
           lineCap: 'round',
           lineJoin: 'round'
         }).addTo(primaryLayer);
       }
 
-      // 2. Blocked road segment in warning red
+      // 2. Draw the blocked road segment directly ON THE ROAD CURVE in warning red
       const blockedRoadPts = scenario.roadblock?.points || [scenario.roadblock.start, scenario.roadblock.end];
 
-      // Red warning glow
+      // Red warning glow on the road
       L.polyline(blockedRoadPts, {
         color: '#ef4444',
         weight: 12,
@@ -396,6 +518,7 @@ export default function DemoMap() {
       const exitPt = blockedRoadPts[blockedRoadPts.length - 1];
       const midPt = scenario.roadblock.barrier_pos || blockedRoadPts[Math.floor(blockedRoadPts.length / 2)];
 
+      // Main centered barrier badge
       const barrierIcon = L.divIcon({
         className: 'demo-barrier-icon',
         html: `
@@ -423,6 +546,7 @@ export default function DemoMap() {
 
       L.marker(midPt, { icon: barrierIcon }).addTo(roadblockMarkLayer);
 
+      // Barricade cones at entry/exit of closed segment
       const coneIcon = L.divIcon({
         className: 'demo-cone-icon',
         html: `<div style="font-size: 15px; filter: drop-shadow(0 0 6px #ef4444);">🚧</div>`,
@@ -432,22 +556,21 @@ export default function DemoMap() {
       L.marker(entrancePt, { icon: coneIcon }).addTo(roadblockMarkLayer);
       L.marker(exitPt, { icon: coneIcon }).addTo(roadblockMarkLayer);
 
-      // 3. Alternate Detour Route in Vivid Emerald Green
+      // 3. Draw Alternate Detour Route in Vivid Emerald Green
       // Ambient Detour Glow
       L.polyline(scenario.detour.points, {
         color: '#10b981',
-        weight: 9,
-        opacity: 0.25,
+        weight: 10,
+        opacity: 0.35,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(detourLayer);
 
-      // Dashed Detour Base Polyline
+      // Sharp Detour Polyline
       L.polyline(scenario.detour.points, {
         color: '#10b981',
-        weight: 4.0,
-        opacity: 0.45,
-        dashArray: '5, 7',
+        weight: 4.5,
+        opacity: 0.98,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(detourLayer);
@@ -478,178 +601,88 @@ export default function DemoMap() {
     }
   }, [scenario, roadblockActive, divergenceIndex]);
 
-  // 5. Setup Courier Marker in Dedicated Layer
-  const setupCourierMarker = useCallback((coord, isDetour) => {
-    if (!mapRef.current || !layersRef.current.courierLayer) return;
+  // 5. Courier Position Interpolation along Active Road Polyline
+  const currentCourierCoord = useMemo(() => {
+    const pts = activePoints;
+    if (!pts || pts.length === 0) return [scenario.restaurant.lat, scenario.restaurant.lon];
+    if (pts.length === 1) return pts[0];
 
-    layersRef.current.courierLayer.clearLayers();
-    courierMarkerRef.current = null;
+    const totalSegs = pts.length - 1;
+    const scaled = courierProgress * totalSegs;
+    const segIdx = Math.min(Math.floor(scaled), totalSegs - 1);
+    const subProgress = scaled - segIdx;
 
-    const activeColor = isDetour ? '#10b981' : '#38bdf8';
+    const pA = pts[segIdx];
+    const pB = pts[segIdx + 1];
 
-    const icon = L.divIcon({
-      className: 'demo-courier-div-icon',
-      html: `
-        <div class="demo-courier-wrapper" style="
-          position: relative;
-          width: 48px;
-          height: 48px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        ">
-          <!-- Pulsing radar glow ring -->
-          <div class="demo-radar-pulse" style="
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: ${activeColor};
-            opacity: 0.45;
-            animation: demoRadarPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-            pointer-events: none;
-          "></div>
+    const lat = pA[0] + (pB[0] - pA[0]) * subProgress;
+    const lon = pA[1] + (pB[1] - pA[1]) * subProgress;
+    return [lat, lon];
+  }, [activePoints, courierProgress, scenario]);
 
-          <!-- Main vehicle circle with package badge -->
-          <div class="demo-courier-disc" style="
-            position: relative;
+  // 6. Update or Create Animated Courier Marker
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const coord = currentCourierCoord;
+    const activeColor = roadblockActive ? '#10b981' : '#38bdf8';
+
+    if (!courierMarkerRef.current) {
+      const icon = L.divIcon({
+        className: 'demo-courier-marker',
+        html: `
+          <div style="
             background: #09090b;
             border: 2.5px solid ${activeColor};
             color: #ffffff;
-            width: 40px;
-            height: 40px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px ${activeColor}, 0 4px 12px rgba(0,0,0,0.8);
-            font-size: 19px;
-            z-index: 2;
+            box-shadow: 0 0 18px ${activeColor};
+            font-size: 17px;
+            transition: border-color 0.3s;
           ">
             🛵
-            <span style="
-              position: absolute;
-              bottom: -3px;
-              right: -3px;
-              background: #f59e0b;
-              font-size: 10px;
-              width: 17px;
-              height: 17px;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border: 1.5px solid #09090b;
-              box-shadow: 0 1px 4px rgba(0,0,0,0.6);
-            ">📦</span>
           </div>
+        `,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17]
+      });
 
-          <!-- Floating Status Badge -->
-          <div style="
-            position: absolute;
-            top: -26px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(9, 9, 11, 0.95);
-            border: 1px solid ${activeColor};
-            color: #fafafa;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 12px;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-            z-index: 10;
-            letter-spacing: 0.02em;
-          ">
-            <span class="demo-courier-status-text" style="color: ${activeColor};">
-              Order En Route
-            </span>
-          </div>
-        </div>
-      `,
-      iconSize: [48, 48],
-      iconAnchor: [24, 24]
-    });
-
-    const marker = L.marker(coord, {
-      icon,
-      zIndexOffset: 2000
-    }).addTo(layersRef.current.courierLayer);
-
-    marker.bindPopup(`
-      <div style="font-size: 12px; font-family: var(--font-sans); color: #fafafa; line-height: 1.4;">
-        <strong style="color: ${activeColor}; font-size: 13px;">🛵 Courier #1 Active</strong><br/>
-        <span>Source: <strong>${scenario.restaurant.name}</strong></span><br/>
-        <span>Destination: <strong>${scenario.customer.name}</strong></span><br/>
-        <span style="color: #a1a1aa;">Algorithm: Dynamic Ant Colony Optimization (ACO)</span>
-      </div>
-    `);
-
-    courierMarkerRef.current = marker;
-  }, [scenario]);
-
-  // 6. Smooth Real-Time Visual Updates (Marker movement + Traveled street trail)
-  const updateCourierVisuals = useCallback((progress, pts, dData, isDetour) => {
-    if (!mapRef.current) return;
-    const { coord, idx } = getPointAtProgress(pts, dData, progress);
-    const activeColor = isDetour ? '#10b981' : '#38bdf8';
-
-    // A. Move Marker LatLng directly without tearing down DOM
-    if (!courierMarkerRef.current || !layersRef.current.courierLayer || !layersRef.current.courierLayer.hasLayer(courierMarkerRef.current)) {
-      setupCourierMarker(coord, isDetour);
+      courierMarkerRef.current = L.marker(coord, { icon, zIndexOffset: 1000 }).addTo(mapRef.current);
     } else {
       courierMarkerRef.current.setLatLng(coord);
-      const el = courierMarkerRef.current.getElement();
-      if (el) {
-        const textEl = el.querySelector('.demo-courier-status-text');
-        if (textEl) {
-          if (progress >= 0.999) {
-            textEl.innerHTML = '🎉 Order Delivered!';
-            textEl.style.color = '#10b981';
-          } else {
-            textEl.innerHTML = `Order En Route (${Math.round(progress * 100)}%)`;
-            textEl.style.color = activeColor;
-          }
-        }
-      }
+      const icon = L.divIcon({
+        className: 'demo-courier-marker',
+        html: `
+          <div style="
+            background: #09090b;
+            border: 2.5px solid ${activeColor};
+            color: #ffffff;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 18px ${activeColor};
+            font-size: 17px;
+            transition: border-color 0.3s;
+          ">
+            🛵
+          </div>
+        `,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17]
+      });
+      courierMarkerRef.current.setIcon(icon);
     }
+  }, [currentCourierCoord, roadblockActive]);
 
-    // B. Live Traveled Trail along actual road curvature
-    if (layersRef.current.traveledTrail) {
-      layersRef.current.traveledTrail.clearLayers();
-      const traveledPts = pts.slice(0, idx + 1).concat([coord]);
-      if (traveledPts.length >= 2) {
-        // Glowing ambient underlay
-        L.polyline(traveledPts, {
-          color: activeColor,
-          weight: 11,
-          opacity: 0.35,
-          lineCap: 'round',
-          lineJoin: 'round'
-        }).addTo(layersRef.current.traveledTrail);
-
-        // Core bright solid polyline
-        L.polyline(traveledPts, {
-          color: activeColor,
-          weight: 5.5,
-          opacity: 1.0,
-          lineCap: 'round',
-          lineJoin: 'round'
-        }).addTo(layersRef.current.traveledTrail);
-      }
-    }
-  }, [setupCourierMarker]);
-
-  // Re-synchronize marker on scenario change or roadblock toggle
-  useEffect(() => {
-    if (!mapRef.current) return;
-    const { coord } = getPointAtProgress(activePoints, distData, courierProgress);
-    setupCourierMarker(coord, roadblockActive);
-    updateCourierVisuals(courierProgress, activePoints, distData, roadblockActive);
-  }, [selectedScenarioKey, roadblockActive, setupCourierMarker, updateCourierVisuals, activePoints, distData, courierProgress]);
-
-  // 7. 60 FPS RequestAnimationFrame Animation Loop
+  // 7. 60 FPS Animation Loop
   useEffect(() => {
     let lastTime = performance.now();
 
@@ -658,8 +691,8 @@ export default function DemoMap() {
       lastTime = currentTime;
 
       if (isPlayingRef.current) {
-        // Base travel duration: ~16 seconds full route at 1x
-        const step = (dt / 16) * speedRef.current;
+        // Base travel duration: ~22 seconds full route at 1x
+        const step = (dt / 22) * speedRef.current;
         let next = progressRef.current + step;
         if (next >= 1.0) {
           next = 1.0;
@@ -667,11 +700,6 @@ export default function DemoMap() {
           isPlayingRef.current = false;
         }
         progressRef.current = next;
-
-        // Directly update Leaflet marker and glowing road trail on each frame
-        updateCourierVisuals(next, activePointsRef.current, distDataRef.current, roadblockActiveRef.current);
-
-        // Update React state for HUD
         setCourierProgress(next);
       }
 
@@ -683,13 +711,12 @@ export default function DemoMap() {
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [updateCourierVisuals]);
+  }, []);
 
   const handleTogglePlay = () => {
-    if (progressRef.current >= 0.999) {
-      progressRef.current = 0;
+    if (courierProgress >= 1.0) {
       setCourierProgress(0);
-      updateCourierVisuals(0, activePointsRef.current, distDataRef.current, roadblockActiveRef.current);
+      progressRef.current = 0;
     }
     setIsPlaying(prev => !prev);
   };
@@ -697,17 +724,17 @@ export default function DemoMap() {
   const handleReset = () => {
     setIsPlaying(false);
     isPlayingRef.current = false;
-    progressRef.current = 0;
     setCourierProgress(0);
-    updateCourierVisuals(0, activePointsRef.current, distDataRef.current, roadblockActiveRef.current);
+    progressRef.current = 0;
   };
 
   const handleToggleRoadblock = () => {
     setRoadblockActive(prev => {
       const next = !prev;
-      if (progressRef.current > 0.8) {
-        progressRef.current = 0;
+      // Keep courier moving or reset progress
+      if (courierProgress > 0.8) {
         setCourierProgress(0);
+        progressRef.current = 0;
       }
       return next;
     });
@@ -718,311 +745,150 @@ export default function DemoMap() {
   const timeDelta = (scenario.detour.duration_min - scenario.primary.duration_min).toFixed(1);
 
   return (
-    <div className="demo-map-container" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      height: 'calc(100vh - 120px)',
-      background: '#09090b',
-      color: '#fafafa',
-      fontFamily: 'var(--font-sans)',
-      position: 'relative'
-    }}>
-      {/* Top Controls Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 18px',
-        background: '#18181b',
-        borderBottom: '1px solid #27272a',
-        flexWrap: 'wrap',
-        gap: '12px',
-        zIndex: 10
-      }}>
-        {/* Scenario Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Sparkles size={16} style={{ color: '#38bdf8' }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Corridor:</span>
-          </div>
-
-          <select
-            className="select-shadcn"
-            value={selectedScenarioKey}
-            onChange={(e) => {
-              setSelectedScenarioKey(e.target.value);
-              setRoadblockActive(false);
-            }}
-            style={{ minWidth: '300px', fontWeight: 500 }}
-          >
-            <option value="scenario_1">📍 1. Indiranagar (Toit Brewpub &rarr; Defence Colony)</option>
-            <option value="scenario_2">📍 2. Koramangala (Truffles 5th Blk &rarr; Wipro Park)</option>
-            <option value="scenario_3">📍 3. CBD Corridor (Church St &rarr; Richmond Town)</option>
-          </select>
-        </div>
-
-        {/* Dynamic Roadblock Toggle Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {roadblockActive ? (
-            <button
-              onClick={handleToggleRoadblock}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#10b981',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '7px 15px',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 0 14px rgba(16, 185, 129, 0.5)'
-              }}
-              title="Remove the simulated road closure and restore direct primary path"
-            >
-              <CheckCircle2 size={16} />
-              <span>Clear Roadblock &amp; Restore Direct Road</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleToggleRoadblock}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ef4444',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '7px 15px',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 0 16px rgba(239, 68, 68, 0.6)'
-              }}
-              title="Close the street segment to trigger ACO dynamic detour calculation"
-            >
-              <AlertTriangle size={16} />
-              <span>Block Street &amp; Compute Alternate Optimal Detour</span>
-            </button>
-          )}
-        </div>
-
-        {/* Courier Animation Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={handleTogglePlay}
-            className={`btn-shadcn ${isPlaying ? 'destructive' : 'primary'}`}
-            style={{ minWidth: '95px' }}
-          >
-            {isPlaying ? (
-              <>
-                <Pause size={14} />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play size={14} fill="currentColor" />
-                <span>{courierProgress >= 0.999 ? 'Replay' : 'Drive'}</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleReset}
-            className="btn-shadcn outline"
-            title="Reset Courier to Restaurant"
-          >
-            <RotateCcw size={14} />
-          </button>
-
-          <select
-            className="select-shadcn"
-            value={playbackSpeed}
-            onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
-            style={{ width: '75px', padding: '4px 6px' }}
-          >
-            <option value="1">1x</option>
-            <option value="2">2x</option>
-            <option value="5">5x</option>
-          </select>
+    <div style={{ display: 'flex', height: 'calc(100vh - 120px)', background: '#09090b', color: '#fafafa', fontFamily: 'var(--font-sans)' }}>
+      {/* Map */}
+      <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+        <div ref={mapEl} style={{ position: 'absolute', inset: 0 }} />
+        <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 500, background: 'rgba(24,24,27,.92)', border: '1px solid #27272a', borderRadius: 10, padding: '8px 12px', fontSize: 12, maxWidth: 360 }}>
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{sc.title}</div>
+          <div style={{ color: '#a1a1aa' }}>Line thickness = pheromone. Click any route on the map to block or reopen it.</div>
         </div>
       </div>
 
-      {/* Main Map View Area */}
-      <div style={{ position: 'relative', flex: 1, width: '100%' }}>
-        <div ref={mapContainerRef} style={{ width: '100%', height: '100%', background: '#09090b' }} />
-
-        {/* Floating Telemetry & Analysis HUD */}
-        <div style={{
-          position: 'absolute',
-          top: '16px',
-          left: '16px',
-          background: 'rgba(24, 24, 27, 0.94)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid #27272a',
-          borderRadius: '8px',
-          padding: '14px 18px',
-          maxWidth: '380px',
-          width: '100%',
-          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.7)',
-          zIndex: 500,
-          pointerEvents: 'auto'
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a1a1aa', fontWeight: 600 }}>
-              ACO Routing Telemetry
-            </span>
-            <span style={{
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              padding: '3px 9px',
-              borderRadius: '4px',
-              background: roadblockActive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(56, 189, 248, 0.15)',
-              color: roadblockActive ? '#10b981' : '#38bdf8',
-              border: `1px solid ${roadblockActive ? '#10b981' : '#38bdf8'}`
-            }}>
-              {roadblockActive ? 'ACO DETOUR ACTIVE' : 'OPTIMAL DIRECT PATH'}
-            </span>
-          </div>
-
-          {/* Locations */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.82rem', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Store size={14} style={{ color: '#38bdf8' }} />
-              <span style={{ fontWeight: 600 }}>{scenario.restaurant.name}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingLeft: '4px' }}>
-              <div style={{ width: '1px', height: '12px', background: '#3f3f46', marginLeft: '2px' }} />
-              <span style={{ color: '#71717a', fontSize: '0.74rem' }}>
-                {roadblockActive ? 'Alternate street corridor' : 'Direct physical arterial route'} ({activePoints.length} GPS vertices)
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <User size={14} style={{ color: '#10b981' }} />
-              <span style={{ fontWeight: 600 }}>{scenario.customer.name}</span>
-            </div>
-          </div>
-
-          {/* Roadblock Warning & ACO Dynamic Rerouting Banner */}
-          {roadblockActive && scenario.roadblock && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              borderRadius: '6px',
-              padding: '10px 12px',
-              fontSize: '0.75rem',
-              color: '#fca5a5',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-              marginBottom: '12px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#ef4444' }}>
-                <ShieldAlert size={15} />
-                <span>BLOCKED: {scenario.roadblock.location_name}</span>
-              </div>
-              <div style={{ color: '#e4e4e7', fontSize: '0.74rem', lineHeight: 1.35 }}>
-                {scenario.roadblock.title}. Pheromone cost set to &infin;.
-              </div>
-              <div style={{ color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Zap size={13} />
-                <span>{scenario.roadblock.bypass_corridor}</span>
-              </div>
-            </div>
+      {/* Courier Animation Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button
+          onClick={handleTogglePlay}
+          className={`btn-shadcn ${isPlaying ? 'destructive' : 'primary'}`}
+          style={{ minWidth: '95px' }}
+        >
+          {isPlaying ? (
+            <>
+              <Pause size={14} />
+              <span>Pause</span>
+            </>
+          ) : (
+            <>
+              <Play size={14} fill="currentColor" />
+              <span>{courierProgress >= 1.0 ? 'Replay' : 'Drive'}</span>
+            </>
           )}
+        </button>
 
-          {/* Metrics Grid */}
+        <button
+          onClick={handleReset}
+          className="btn-shadcn outline"
+          title="Reset Courier to Restaurant"
+        >
+          <RotateCcw size={14} />
+        </button>
+        <button className="btn-shadcn outline" onClick={resetState}><RotateCcw size={14} /> Reset</button>
+        <select className="select-shadcn" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} style={{ width: 70 }}>
+          <option value={0.5}>0.5x</option><option value={1}>1x</option><option value={2}>2x</option><option value={4}>4x</option>
+        </select>
+      </div>
+
+      <div style={{ background: phase === 'stuck' ? '#450a0a' : '#18181b', border: '1px solid #27272a', borderRadius: 10, padding: '10px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14 }}>
+          {phase === 'optimizing' ? <Sparkles size={15} color="#38bdf8" /> : phase === 'delivered' ? <CheckCircle2 size={15} color="#22c55e" /> : phase === 'stuck' ? <AlertTriangle size={15} color="#ef4444" /> : <RouteIcon size={15} />}
+          {statusText}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a1a1aa', fontSize: 12, marginTop: 6 }}>
+          <span>Elapsed {bag.toFixed(1)} min</span>
+          <span>{remainingKm !== null ? `${remainingKm.toFixed(2)} km to go` : `SLA ${sc.customer.deadline} min`}</span>
+        </div>
+      </div>
+
+      {/* Food temperature */}
+      <div style={{ background: '#18181b', border: '1px solid #27272a', borderRadius: 10, padding: '10px 12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Food temperature</span>
+          <b style={{ color: temp > 65 ? '#f97316' : temp > 50 ? '#facc15' : '#60a5fa' }}>{temp.toFixed(0)}°C</b>
+        </div>
+        <div style={{ height: 6, background: '#27272a', borderRadius: 4, marginTop: 8, overflow: 'hidden' }}>
+          <div style={{ width: `${tempPct}%`, height: '100%', background: tempPct < 60 ? '#22c55e' : tempPct < 100 ? '#facc15' : '#ef4444' }} />
+        </div>
+
+        {/* Roadblock Warning & ACO Dynamic Rerouting Banner */}
+        {roadblockActive && scenario.roadblock && (
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '8px',
-            background: 'rgba(9, 9, 11, 0.65)',
-            padding: '10px',
+            background: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
             borderRadius: '6px',
-            border: '1px solid #27272a',
-            marginBottom: '10px'
+            padding: '10px 12px',
+            fontSize: '0.75rem',
+            color: '#fca5a5',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            marginBottom: '12px'
           }}>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: '#71717a' }}>Travel Distance</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                {activeRoute.distance_km} km
-                {roadblockActive && (
-                  <span style={{ fontSize: '0.72rem', color: '#f59e0b', marginLeft: '4px', fontWeight: 500 }}>
-                    (+{distDelta}km)
-                  </span>
-                )}
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#ef4444' }}>
+              <ShieldAlert size={15} />
+              <span>BLOCKED: {scenario.roadblock.location_name}</span>
             </div>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: '#71717a' }}>Est. Travel Time</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                {activeRoute.duration_min} min
-                {roadblockActive && (
-                  <span style={{ fontSize: '0.72rem', color: '#f59e0b', marginLeft: '4px', fontWeight: 500 }}>
-                    (+{timeDelta}m)
-                  </span>
-                )}
-              </div>
+            <div style={{ color: '#e4e4e7', fontSize: '0.74rem', lineHeight: 1.35 }}>
+              {scenario.roadblock.title}. Pheromone cost set to &infin;.
+            </div>
+            <div style={{ color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Zap size={13} />
+              <span>{scenario.roadblock.bypass_corridor}</span>
             </div>
           </div>
+        )}
 
-          {/* Courier Progress Bar */}
+        {/* Metrics Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '8px',
+          background: 'rgba(9, 9, 11, 0.65)',
+          padding: '10px',
+          borderRadius: '6px',
+          border: '1px solid #27272a',
+          marginBottom: '10px'
+        }}>
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#a1a1aa', marginBottom: '4px' }}>
-              <span>Courier Transit</span>
-              <span style={{ fontFamily: 'var(--font-mono)' }}>{Math.round(courierProgress * 100)}%</span>
+            <div style={{ fontSize: '0.7rem', color: '#71717a' }}>Travel Distance</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+              {activeRoute.distance_km} km
+              {roadblockActive && (
+                <span style={{ fontSize: '0.72rem', color: '#f59e0b', marginLeft: '4px', fontWeight: 500 }}>
+                  (+{distDelta}km)
+                </span>
+                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7 }}>
+              <div style={{ flex: 1, height: 6, background: '#27272a', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ width: `${(s * 100).toFixed(1)}%`, height: '100%', background: isBlocked ? '#52525b' : r.color, transition: 'width 60ms linear' }} />
+              </div>
+              <span style={{ fontSize: 11, color: '#a1a1aa', width: 70, textAlign: 'right' }}>pheromone {(s * 100).toFixed(0)}%</span>
             </div>
-            <div style={{
-              width: '100%',
-              height: '6px',
-              background: '#27272a',
-              borderRadius: '3px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${courierProgress * 100}%`,
-                height: '100%',
-                background: roadblockActive ? '#10b981' : '#38bdf8',
-                transition: 'width 0.1s linear'
-              }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 7 }}>
+              <span style={{ fontSize: 11, color: '#a1a1aa' }} title={cost ? `distance ${cost.distance.toFixed(1)} + time ${cost.time.toFixed(1)} + freshness ${cost.fresh.toFixed(1)} + cold ${cost.cold.toFixed(1)}` : ''}>
+                {isBlocked ? 'cost ∞ (closed)' : cost ? `ACO cost ${cost.total.toFixed(1)}` : 'cost computed on dispatch'}
+              </span>
+              <button className="btn-shadcn outline" style={{ padding: '2px 9px', fontSize: 11 }}
+                onClick={() => toggleBlock(r.id)} disabled={phase === 'optimizing' || phase === 'delivered'}>
+                {isBlocked ? <><Undo2 size={12} /> Reopen</> : <><Ban size={12} /> Block</>}
+              </button>
             </div>
+          </div>
+          );
+          })}
+          <div style={{ fontSize: 11, color: '#71717a' }}>
+            Cost = distance + 1.5·time + 0.5·minutes in bag + 5·minutes past {FRESH_LIMIT_MIN} min (cold food). Recomputed from the courier's current position when a road closes.
           </div>
         </div>
 
-        {/* Legend Overlay at Bottom Left */}
-        <div style={{
-          position: 'absolute',
-          bottom: '24px',
-          left: '16px',
-          background: 'rgba(24, 24, 27, 0.92)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid #27272a',
-          borderRadius: '6px',
-          padding: '8px 14px',
-          fontSize: '0.75rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          zIndex: 500,
-          pointerEvents: 'auto'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '4px', background: '#38bdf8', borderRadius: '2px' }} />
-            <span>Direct Street Route</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '4px', background: '#10b981', borderRadius: '2px' }} />
-            <span>ACO Detour Route</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '4px', background: '#ef4444', borderRadius: '2px' }} />
-            <span>Closed Road Segment</span>
-          </div>
+        {/* Event log */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 12, color: '#a1a1aa' }}>Dispatch log</div>
+          {log.length === 0 && <div style={{ fontSize: 12, color: '#52525b' }}>No events yet.</div>}
+          {log.map((e) => (
+            <div key={e.id} style={{ fontSize: 12, borderLeft: `3px solid ${{ success: '#22c55e', warning: '#facc15', danger: '#ef4444', info: '#38bdf8' }[e.kind]}`, padding: '3px 8px', background: '#18181b', borderRadius: 4 }}>
+              <span style={{ color: '#71717a' }}>{e.t.toFixed(1)}m </span>{e.text}
+            </div>
+          ))}
         </div>
       </div>
     </div>
