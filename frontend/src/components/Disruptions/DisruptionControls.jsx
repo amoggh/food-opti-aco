@@ -31,13 +31,13 @@ export default function DisruptionControls({
   const [deadlineMin, setDeadlineMin] = useState(45);
 
   // Traffic Spike State
-  const [trafficSource, setTrafficSource] = useState(roadGraph?.edges?.[0]?.u || 'NODE_0001');
-  const [trafficTarget, setTrafficTarget] = useState(roadGraph?.edges?.[0]?.v || 'NODE_0002');
+  const [trafficSource, setTrafficSource] = useState(roadGraph?.edges?.[0]?.source || 'NODE_0001');
+  const [trafficTarget, setTrafficTarget] = useState(roadGraph?.edges?.[0]?.target || 'NODE_0002');
   const [trafficMultiplier, setTrafficMultiplier] = useState(2.5);
 
   // Road Closure State
-  const [closureSource, setClosureSource] = useState(roadGraph?.edges?.[2]?.u || 'NODE_0002');
-  const [closureTarget, setClosureTarget] = useState(roadGraph?.edges?.[2]?.v || 'NODE_0003');
+  const [closureSource, setClosureSource] = useState(roadGraph?.edges?.[1]?.source || 'NODE_0002');
+  const [closureTarget, setClosureTarget] = useState(roadGraph?.edges?.[1]?.target || 'NODE_0003');
 
   // Rider Unavailable State
   const [selectedRider, setSelectedRider] = useState(riders[0]?.rider_id || 'RIDER_001');
@@ -66,9 +66,11 @@ export default function DisruptionControls({
         order_id: orderId,
         restaurant_id: selectedRest,
         customer_id: selectedCust,
-        preparation_time: 15,
-        // Backend deadline = now + prep + lead time; the UI field is "minutes from now"
-        delivery_lead_time_min: Math.max(5, Math.round(parseFloat(deadlineMin) - 15))
+        package_weight_kg: parseFloat(packageWeight),
+        order_time_min: simTimeMinutes,
+        preparation_time_min: 15.0,
+        deadline_min: simTimeMinutes + parseFloat(deadlineMin),
+        trigger_reoptimization: true
       });
       addLog(`Dynamic Order: ${orderId}`, 'success', `Injected from ${selectedRest} to ${selectedCust}. ACO re-dispatched.`);
       onEventTriggered();
@@ -89,7 +91,7 @@ export default function DisruptionControls({
         multiplier: parseFloat(trafficMultiplier),
         trigger_reoptimization: true
       });
-      addLog('Traffic Congestion', 'warning', `Segment ${trafficSource} → ${trafficTarget} congestion scaled to ${trafficMultiplier}x.`);
+      addLog('Traffic Congestion', 'warning', `Segment ${trafficSource} &rarr; ${trafficTarget} congestion scaled to ${trafficMultiplier}x.`);
       onEventTriggered();
     } catch (err) {
       addLog('Traffic Spike Failed', 'error', err.message);
@@ -107,7 +109,7 @@ export default function DisruptionControls({
         target: closureTarget,
         trigger_reoptimization: true
       });
-      addLog('Road Closure Alert', 'danger', `Edge ${closureSource} → ${closureTarget} closed. Couriers rerouted.`);
+      addLog('Road Closure Alert', 'danger', `Edge ${closureSource} &rarr; ${closureTarget} closed. Couriers rerouted.`);
       onEventTriggered();
     } catch (err) {
       addLog('Road Closure Failed', 'error', err.message);
@@ -189,7 +191,7 @@ export default function DisruptionControls({
               <option value="">-- Choose Order to Focus --</option>
               {orders.slice(0, 30).map(o => (
                 <option key={o.order_id} value={o.order_id}>
-                  {o.order_id} ({o.restaurant_id} → {o.customer_id})
+                  {o.order_id} ({o.restaurant_id} &rarr; {o.customer_id})
                 </option>
               ))}
             </select>

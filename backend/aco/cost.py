@@ -24,8 +24,6 @@ class CostEvaluator:
         late_penalty = 0.0
         freshness_penalty = 0.0
         late_orders_count = 0
-        cold_penalty = 0.0
-        cold_orders_count = 0
         served_order_ids = set()
 
         for tour in tours.values():
@@ -45,11 +43,6 @@ class CostEvaluator:
                     ready_time = pickup_nodes[stop.order_id].ready_time_min
                     transit_and_waiting = max(0.0, delivery_time - ready_time)
                     freshness_penalty += transit_and_waiting
-                    # Food-temperature limit: steep extra penalty once food goes cold
-                    overrun = transit_and_waiting - self.config.freshness_limit_min
-                    if overrun > 0:
-                        cold_penalty += overrun
-                        cold_orders_count += 1
 
         unserved_orders_count = len(all_order_ids) - len(served_order_ids)
         unserved_penalty = unserved_orders_count * self.config.unserved_order_penalty
@@ -62,7 +55,6 @@ class CostEvaluator:
             + self.config.time_weight * total_time
             + self.config.late_weight * late_penalty
             + self.config.freshness_weight * freshness_penalty
-            + self.config.cold_food_weight * cold_penalty
             + unserved_penalty
         )
 
@@ -73,7 +65,6 @@ class CostEvaluator:
             late_delivery_penalty=round(late_penalty, 2),
             freshness_penalty=round(freshness_penalty, 2),
             late_orders_count=late_orders_count,
-            cold_orders_count=cold_orders_count,
             unserved_orders_count=unserved_orders_count,
             fitness_cost=round(fitness_cost, 2),
         )

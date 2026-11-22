@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 
 class NewOrderRequest(BaseModel):
-    order_id: Optional[str] = None
     restaurant_id: str
     customer_id: str
     preparation_time: int = Field(default=15, ge=1, description="Kitchen preparation time in minutes")
@@ -12,25 +11,8 @@ class NewOrderRequest(BaseModel):
 
 
 class TrafficEventRequest(BaseModel):
-    """Identify the road by edge_id, or by its source/target node IDs."""
-    edge_id: Optional[str] = None
-    source: Optional[str] = None
-    target: Optional[str] = None
-    traffic_level: Optional[str] = Field(default=None, description="TrafficLevel: LOW, MEDIUM, HIGH, or SEVERE")
-    multiplier: Optional[float] = Field(default=None, gt=0, description="Travel-time multiplier, mapped to a TrafficLevel")
-    trigger_reoptimization: Optional[bool] = True
-
-    def get_level(self) -> str:
-        if self.traffic_level:
-            return self.traffic_level.upper()
-        m = self.multiplier or 2.5
-        if m >= 4.0:
-            return "SEVERE"
-        if m >= 2.0:
-            return "HIGH"
-        if m >= 1.3:
-            return "MEDIUM"
-        return "LOW"
+    edge_id: str
+    traffic_level: str = Field(default="HIGH", description="TrafficLevel: LOW, MEDIUM, HIGH, or SEVERE")
 
 
 class RoadClosureRequest(BaseModel):
@@ -39,6 +21,12 @@ class RoadClosureRequest(BaseModel):
     target: Optional[str] = None
     trigger_reoptimization: Optional[bool] = True
 
+    def get_edge_id(self) -> str:
+        if self.edge_id:
+            return self.edge_id
+        if self.source and self.target:
+            return f"{self.source}_{self.target}"
+        return "N00_N01"
 
 
 class RiderUnavailableRequest(BaseModel):
@@ -65,10 +53,3 @@ class OptimizationRunRequest(BaseModel):
 
     def get_iterations(self) -> int:
         return self.iterations if self.iterations is not None else self.num_iterations
-
-
-class BlockRoadRequest(BaseModel):
-    """Close the road nearest a map point (must be on/near a courier's route)."""
-    lat: float = Field(ge=-90, le=90)
-    lon: float = Field(ge=-180, le=180)
-    rider_id: Optional[str] = None

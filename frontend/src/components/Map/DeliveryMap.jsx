@@ -55,12 +55,6 @@ export default function DeliveryMap({
   const [hideOtherEntities, setHideOtherEntities] = useState(true);
   const [isBlockingRoute, setIsBlockingRoute] = useState(false);
   const [blockStatusMsg, setBlockStatusMsg] = useState(null);
-  // "Block a road" mode: the next click on a courier's route closes that road
-  const [roadBlockMode, setRoadBlockMode] = useState(false);
-  const [roadBlockBusy, setRoadBlockBusy] = useState(false);
-  const [roadBlockMsg, setRoadBlockMsg] = useState(null);
-  const roadBlockModeRef = useRef(false);
-  const mapClickHandlerRef = useRef(() => {});
 
   // Identify focused order details
   const focusedOrder = useMemo(() => {
@@ -128,8 +122,6 @@ export default function DeliveryMap({
       'Grid Graph': layersRef.current.roadNetwork
     };
     L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
-
-    map.on('click', (e) => mapClickHandlerRef.current(e.latlng));
 
     mapRef.current = map;
 
@@ -382,10 +374,10 @@ export default function DeliveryMap({
       if (roadPath && roadPath.length > 1) {
         const pts = roadPath.map(p => [parseFloat(p[0]), parseFloat(p[1])]).filter(p => !isNaN(p[0]) && !isNaN(p[1]));
         if (pts.length > 1) {
-          const isDetourActive = !!rider.detour_active;
+          const isDetourActive = closedEdges.length > 0;
           
-          // Glow layer for focused or detoured route
-          if (isFocusedCourier || isDetourActive) {
+          // Glow layer for focused route
+          if (isFocusedCourier) {
             L.polyline(pts, {
               color: isDetourActive ? '#10b981' : '#38bdf8',
               weight: 8,
@@ -396,10 +388,10 @@ export default function DeliveryMap({
           }
 
           const poly = L.polyline(pts, {
-            color: isDetourActive ? '#10b981' : isFocusedCourier ? '#fafafa' : color,
-            weight: isFocusedCourier ? 4.0 : isDetourActive ? 3.5 : 2.2,
-            opacity: isFocusedCourier || isDetourActive ? 1.0 : 0.6,
-            dashArray: isDetourActive ? '7, 5' : null,
+            color: isFocusedCourier ? (isDetourActive ? '#10b981' : '#fafafa') : color,
+            weight: isFocusedCourier ? 4.0 : 2.2,
+            opacity: isFocusedCourier ? 1.0 : 0.6,
+            dashArray: isDetourActive && isFocusedCourier ? '6, 6' : null,
             lineCap: 'round',
             lineJoin: 'round',
           });
@@ -407,7 +399,7 @@ export default function DeliveryMap({
           poly.bindPopup(`
             <div style="font-size: 11px; font-family: var(--font-sans); line-height: 1.4;">
               <strong>Courier ${rider.rider_id}</strong><br/>
-              ${isDetourActive ? '<span style="color:#10b981; font-weight:600;">↪ Detouring around a road closure</span><br/>' : ''}
+              ${isDetourActive && isFocusedCourier ? '<span style="color:#10b981; font-weight:600;">✨ Alternate ACO Detour Active</span><br/>' : ''}
               Status: <span style="text-transform: capitalize;">${rider.status.toLowerCase()}</span><br/>
               Remaining Stops: <strong>${(rider.assigned_stops || []).length}</strong>
             </div>
@@ -449,14 +441,14 @@ export default function DeliveryMap({
           <strong>Courier ${rider.rider_id}</strong>
           ${isFocusedCourier ? ' <span style="color:#38bdf8;">(Focused Courier)</span>' : ''}<br/>
           Load: <strong>${(rider.current_load_kg || 0).toFixed(1)} / ${(rider.capacity_kg || 15).toFixed(0)} kg</strong><br/>
-          Distance Covered: <strong>${(rider.total_distance_km || 0).toFixed(1)} km</strong><br/>
+          Distance Covered: <strong>${(rider.distance_traveled_km || 0).toFixed(1)} km</strong><br/>
           Stops: <strong>${(rider.assigned_stops || []).length}</strong>
         </div>
       `);
 
       marker.addTo(riderLayer);
     });
-  }, [riders, selectedRiderId, focusedOrder, focusedAssignedRider, hideOtherEntities, closedEdges, blockedEdgesInfo, roadGraph]);
+  }, [riders, selectedRiderId, focusedOrder, focusedAssignedRider, hideOtherEntities, closedEdges, roadGraph]);
 
   // Handle Action: Simulate Emergency Roadblock on the Focused Order's Route
   const handleBlockOrderRoute = async () => {
@@ -490,58 +482,7 @@ export default function DeliveryMap({
     }
   };
 
-  const handleRoadBlockClick = async (latlng) => {
-    if (!roadBlockModeRef.current || roadBlockBusy) return;
-    mapRef.current?.closePopup();
-    setRoadBlockBusy(true);
-    setRoadBlockMsg('Closing road and re-routing affected couriers…');
-    try {
-      const res = await api.blockRoadAt(latlng.lat, latlng.lng);
-      setRoadBlockMsg(res.message);
-      const pts = res.closure?.coords || [];
-      if (pts.length && mapRef.current) {
-        const mid = pts[Math.floor(pts.length / 2)];
-        mapRef.current.flyTo(mid, Math.max(mapRef.current.getZoom(), 14), { duration: 0.8 });
-      }
-      setRoadBlockMode(false);
-      roadBlockModeRef.current = false;
-      onRefreshState();
-    } catch (err) {
-      setRoadBlockMsg(err.message);
-    } finally {
-      setRoadBlockBusy(false);
-    }
-  };
-  mapClickHandlerRef.current = handleRoadBlockClick;
-
-  // Toggle the crosshair class directly: React must not own className on Leaflet's container
-  useEffect(() => {
-    mapContainerRef.current?.classList.toggle('road-block-mode', roadBlockMode);
-  }, [roadBlockMode]);
-
-  const toggleRoadBlockMode = () => {
-    const next = !roadBlockMode;
-    setRoadBlockMode(next);
-    roadBlockModeRef.current = next;
-    setRoadBlockMsg(next ? 'Click on any courier route to close that road.' : null);
-  };
-
-  const handleClearAllClosures = async () => {
-    setRoadBlockBusy(true);
-    try {
-      await api.clearRoadClosures();
-      setRoadBlockMsg('All road closures cleared — couriers back on direct routes.');
-      onRefreshState();
-    } catch (err) {
-      setRoadBlockMsg(err.message);
-    } finally {
-      setRoadBlockBusy(false);
-    }
-  };
-
-  const activeClosures = (blockedEdgesInfo || []).length;
-  const detouredCount = riders.filter((r) => r.detour_active).length;
-  const hasActiveBlockage = activeClosures > 0 || (closedEdges && closedEdges.length > 0);
+  const hasActiveBlockage = closedEdges && closedEdges.length > 0;
 
   return (
     <div className="map-card-shadcn">
@@ -588,27 +529,6 @@ export default function DeliveryMap({
             </button>
           )}
 
-          <button
-            className={`btn-shadcn ${roadBlockMode ? 'primary' : 'outline'}`}
-            style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem', display: 'flex', alignItems: 'center', gap: '4px', ...(roadBlockMode ? { background: '#ef4444', borderColor: '#ef4444', color: '#fff' } : {}) }}
-            onClick={toggleRoadBlockMode}
-            disabled={roadBlockBusy}
-            title="Close a road: click this, then click on any courier's route"
-          >
-            <span>🚧</span>
-            <span>{roadBlockMode ? 'Click a route…' : 'Block a road'}</span>
-          </button>
-          {activeClosures > 0 && (
-            <button
-              className="btn-shadcn outline"
-              style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem' }}
-              onClick={handleClearAllClosures}
-              disabled={roadBlockBusy}
-            >
-              Clear closures ({activeClosures})
-            </button>
-          )}
-
           {/* Quick Dropdown to Select Order to Focus */}
           <select 
             className="select-shadcn"
@@ -637,13 +557,6 @@ export default function DeliveryMap({
           )}
         </div>
       </div>
-
-      {(roadBlockMsg || detouredCount > 0) && !focusedOrder && (
-        <div style={{ background: roadBlockMode ? 'rgba(239,68,68,0.12)' : '#18181b', borderBottom: '1px solid var(--border)', padding: '0.45rem 0.95rem', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-          <span style={{ color: roadBlockMode ? '#fca5a5' : '#e4e4e7' }}>{roadBlockBusy ? '⏳ ' : ''}{roadBlockMsg}</span>
-          {detouredCount > 0 && <span style={{ color: '#10b981', whiteSpace: 'nowrap' }}>↪ {detouredCount} courier{detouredCount > 1 ? 's' : ''} detouring</span>}
-        </div>
-      )}
 
       {/* Focused Order Inspector Banner with Real-Time Roadblock & Detour Actions */}
       {focusedOrder && (

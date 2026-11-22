@@ -73,8 +73,8 @@ export default function FleetStatus({
                 <span 
                   className="status-pill"
                   style={{
-                    background: isUnavailable ? 'rgba(239, 68, 68, 0.15)' : rider.status === 'AVAILABLE' ? '#27272a' : 'rgba(255, 255, 255, 0.1)',
-                    color: isUnavailable ? '#fca5a5' : rider.status === 'AVAILABLE' ? '#a1a1aa' : '#fafafa',
+                    background: isUnavailable ? 'rgba(239, 68, 68, 0.15)' : rider.status === 'IDLE' ? '#27272a' : 'rgba(255, 255, 255, 0.1)',
+                    color: isUnavailable ? '#fca5a5' : rider.status === 'IDLE' ? '#a1a1aa' : '#fafafa',
                     borderColor: isUnavailable ? 'rgba(239, 68, 68, 0.3)' : '#27272a'
                   }}
                 >
@@ -104,7 +104,7 @@ export default function FleetStatus({
               {/* Stats Row */}
               <div className="item-row" style={{ fontSize: '0.68rem', color: '#71717a' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  <Navigation size={11} /> {(rider.total_distance_km || 0).toFixed(1)} km traveled
+                  <Navigation size={11} /> {(rider.distance_traveled_km || 0).toFixed(1)} km traveled
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                   <Check size={11} /> {rider.completed_orders_count || 0} completed

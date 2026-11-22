@@ -119,27 +119,6 @@ def test_cost_evaluator_formula(mock_aco_config):
     assert plan.fitness_cost == 120.0
 
 
-def test_cold_food_penalty_beyond_freshness_limit(mock_aco_config):
-    evaluator = CostEvaluator(mock_aco_config)
-    p_node = ACOTaskNode("P_O", "pickup", "O", ready_time_min=0.0)
-    d_node = ACOTaskNode("D_O", "dropoff", "O", deadline_min=1000.0)
-
-    def plan_for(delivery_at: float) -> DeliveryPlan:
-        tour = RiderTour(
-            rider_id="R1", capacity=1, stops=[p_node, d_node],
-            arrival_times=[0.0, delivery_at], departure_times=[3.0, delivery_at + 3.0],
-            loads=[1, 0], total_distance_km=0.0, total_time_min=0.0,
-        )
-        return evaluator.evaluate({"R1": tour}, ["O"], {"O": p_node}, {"O": d_node})
-
-    warm = plan_for(40.0)   # exactly at the 40-min limit: no cold penalty
-    cold = plan_for(50.0)   # 10 min past the limit
-    assert warm.cold_orders_count == 0
-    assert cold.cold_orders_count == 1
-    # 10 extra freshness minutes (0.5/min) + 10 cold minutes (5.0/min)
-    assert cold.fitness_cost - warm.fitness_cost == 10 * 0.5 + 10 * 5.0
-
-
 def test_ant_constraint_enforcement(mock_aco_config, sample_delivery_problem):
     restaurants, customers, orders, riders = sample_delivery_problem
     aco = ACOEngine(config=mock_aco_config)

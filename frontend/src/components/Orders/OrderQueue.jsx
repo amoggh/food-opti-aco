@@ -19,7 +19,7 @@ export default function OrderQueue({
       // Status filter
       if (filterStatus !== 'ALL') {
         if (filterStatus === 'LATE') {
-          const isLate = order.is_late || (order.delivered_at_min && order.delivered_at_min > order.deadline_min);
+          const isLate = order.is_late || (order.delivered_time_min && order.delivered_time_min > order.deadline_min);
           if (!isLate) return false;
         } else if (order.status !== filterStatus) {
           return false;
@@ -129,7 +129,7 @@ export default function OrderQueue({
             const isFocused = focusedOrderId === order.order_id;
             const statusLower = order.status ? order.status.toLowerCase() : 'placed';
             const deadlineRemaining = order.deadline_min - currentTimeMinutes;
-            const isLate = order.is_late || (order.delivered_at_min && order.delivered_at_min > order.deadline_min) || (deadlineRemaining < 0 && order.status !== 'DELIVERED');
+            const isLate = order.is_late || (order.delivered_time_min && order.delivered_time_min > order.deadline_min) || (deadlineRemaining < 0 && order.status !== 'DELIVERED');
 
             return (
               <div 
@@ -173,7 +173,7 @@ export default function OrderQueue({
                   <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                     <Clock size={11} /> 
                     {order.status === 'DELIVERED' ? (
-                      <span>Delivered in {order.delivered_at_min ? (order.delivered_at_min - order.order_time_min).toFixed(0) : '--'}m</span>
+                      <span>Delivered in {order.delivered_time_min ? (order.delivered_time_min - order.order_time_min).toFixed(0) : '--'}m</span>
                     ) : (
                       <span>
                         Due at {order.deadline_min?.toFixed(0)}m 

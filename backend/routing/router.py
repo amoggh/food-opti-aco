@@ -32,7 +32,7 @@ class RoutingEngine:
         self.graph = graph
         self.traffic_model = traffic_model or TrafficModel()
         self.osm_router = osm_router or OSMRouter()
-        self._route_cache: Dict[Tuple[str, str, str, tuple], RouteResult] = {}
+        self._route_cache: Dict[Tuple[str, str, str], RouteResult] = {}
 
     def clear_cache(self) -> None:
         """Clears the route cache when road conditions, traffic, or topologies change."""

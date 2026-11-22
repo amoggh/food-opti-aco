@@ -1,10 +1,9 @@
 """Real-world road network router integrating OpenStreetMap routing (OSRM) with persistent local caching."""
 import json
 import logging
-import threading
 from math import atan2, cos, radians, sin, sqrt
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 
@@ -41,25 +40,7 @@ class OSMRouter:
             self.cache_file = base_dir / "data" / "processed" / "osm_route_cache.json"
         self._cache: Dict[str, Dict[str, Any]] = {}
         self._cache_dirty: bool = False
-        self._save_lock = threading.Lock()
-        self._save_timer: Optional[threading.Timer] = None
-        self._client: Optional[httpx.Client] = None
-        self._request_slots = threading.BoundedSemaphore(8)  # be polite to the public OSRM server
         self._load_cache()
-
-    def _http(self, timeout: float) -> httpx.Client:
-        """Reuses one HTTP client (creating an SSL context costs ~1s per client)."""
-        if self._client is None:
-            self._client = httpx.Client(timeout=timeout)
-        return self._client
-
-    def _schedule_save(self, delay_s: float = 15.0) -> None:
-        """Debounced background flush: rewriting the multi-MB cache on every route blocks callers for seconds."""
-        if self._save_timer is not None and self._save_timer.is_alive():
-            return
-        self._save_timer = threading.Timer(delay_s, self.save_cache)
-        self._save_timer.daemon = True
-        self._save_timer.start()
 
     def _load_cache(self) -> None:
         """Loads cached road geometry from disk if available."""
@@ -75,20 +56,17 @@ class OSMRouter:
 
     def save_cache(self) -> None:
         """Flushes cached route geometry to disk atomically."""
-        with self._save_lock:
-            if not self._cache_dirty:
-                return
+        if not self._cache_dirty:
+            return
+        try:
+            self.cache_file.parent.mkdir(parents=True, exist_ok=True)
+            tmp_file = self.cache_file.with_suffix(".tmp")
+            with open(tmp_file, "w", encoding="utf-8") as f:
+                json.dump(self._cache, f, separators=(",", ":"))
+            tmp_file.replace(self.cache_file)
             self._cache_dirty = False
-            snapshot = dict(self._cache)
-            try:
-                self.cache_file.parent.mkdir(parents=True, exist_ok=True)
-                tmp_file = self.cache_file.with_suffix(".tmp")
-                with open(tmp_file, "w", encoding="utf-8") as f:
-                    json.dump(snapshot, f, separators=(",", ":"))
-                tmp_file.replace(self.cache_file)
-            except Exception as e:
-                self._cache_dirty = True
-                logger.warning(f"Failed to persist OSM route cache to {self.cache_file}: {e}")
+        except Exception as e:
+            logger.warning(f"Failed to persist OSM route cache to {self.cache_file}: {e}")
 
     @staticmethod
     def _make_key(lat1: float, lon1: float, lat2: float, lon2: float) -> str:
@@ -120,25 +98,26 @@ class OSMRouter:
         # Query OSRM public service
         url = f"{self.OSRM_ENDPOINT}/{start_lon:.6f},{start_lat:.6f};{end_lon:.6f},{end_lat:.6f}?overview=full&geometries=geojson"
         try:
-            resp = self._http(timeout).get(url, timeout=timeout)
-            if resp.status_code == 200:
-                data = resp.json()
-                if data.get("routes"):
-                    best_route = data["routes"][0]
-                    # OSRM returns coordinates in [lon, lat] format -> convert to [lat, lon]
-                    raw_coords = best_route["geometry"]["coordinates"]
-                    coords = [(round(pt[1], 6), round(pt[0], 6)) for pt in raw_coords]
-                    distance_km = round(best_route["distance"] / 1000.0, 4)
-                    duration_min = round(best_route["duration"] / 60.0, 4)
+            with httpx.Client(timeout=timeout) as client:
+                resp = client.get(url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("routes"):
+                        best_route = data["routes"][0]
+                        # OSRM returns coordinates in [lon, lat] format -> convert to [lat, lon]
+                        raw_coords = best_route["geometry"]["coordinates"]
+                        coords = [(round(pt[1], 6), round(pt[0], 6)) for pt in raw_coords]
+                        distance_km = round(best_route["distance"] / 1000.0, 4)
+                        duration_min = round(best_route["duration"] / 60.0, 4)
 
-                    self._cache[cache_key] = {
-                        "coords": coords,
-                        "distance_km": distance_km,
-                        "duration_min": duration_min,
-                    }
-                    self._cache_dirty = True
-                    self._schedule_save()
-                    return (coords, distance_km, duration_min)
+                        self._cache[cache_key] = {
+                            "coords": coords,
+                            "distance_km": distance_km,
+                            "duration_min": duration_min,
+                        }
+                        self._cache_dirty = True
+                        self.save_cache()
+                        return (coords, distance_km, duration_min)
         except Exception as e:
             logger.debug(f"OSRM query fallback for {cache_key}: {e}")
 
@@ -154,43 +133,6 @@ class OSMRouter:
         }
         self._cache_dirty = True
         return (fallback_coords, fallback_dist, fallback_time)
-
-    def query_routes(
-        self, stops: List[Tuple[float, float]], alternatives: bool = False, timeout: float = 4.0
-    ) -> List[Tuple[List[Tuple[float, float]], float, float]]:
-        """Real OSRM routes through `stops` (plus OSRM's alternatives if asked).
-
-        Unlike get_route/get_route_for_stops this never invents fallback geometry: on failure it
-        returns [] so callers can't mistake a straight line for a road.
-        """
-        key = ("alt_" if alternatives else "q_") + ";".join(f"{round(p[0], 5)},{round(p[1], 5)}" for p in stops)
-        if key in self._cache:
-            return [([tuple(pt) for pt in r["coords"]], float(r["distance_km"]), float(r["duration_min"]))
-                    for r in self._cache[key]["routes"]]
-        coords_str = ";".join(f"{p[1]:.6f},{p[0]:.6f}" for p in stops)
-        url = f"{self.OSRM_ENDPOINT}/{coords_str}?overview=full&geometries=geojson"
-        if alternatives:
-            url += "&alternatives=3"
-        try:
-            with self._request_slots:
-                resp = self._http(timeout).get(url, timeout=timeout)
-            if resp.status_code != 200:
-                return []
-            routes = []
-            for r in resp.json().get("routes", []):
-                routes.append({
-                    "coords": [(round(pt[1], 6), round(pt[0], 6)) for pt in r["geometry"]["coordinates"]],
-                    "distance_km": round(r["distance"] / 1000.0, 4),
-                    "duration_min": round(r["duration"] / 60.0, 4),
-                })
-        except Exception as e:
-            logger.debug(f"OSRM query failed for {key}: {e}")
-            return []
-        if routes:
-            self._cache[key] = {"routes": routes}
-            self._cache_dirty = True
-            self._schedule_save()
-        return [(r["coords"], r["distance_km"], r["duration_min"]) for r in routes]
 
     def get_route_for_stops(
         self, stops: List[Tuple[float, float]], timeout: float = 4.0
@@ -211,24 +153,25 @@ class OSMRouter:
         coords_str = ";".join([f"{p[1]:.6f},{p[0]:.6f}" for p in stops])
         url = f"{self.OSRM_ENDPOINT}/{coords_str}?overview=full&geometries=geojson"
         try:
-            resp = self._http(timeout).get(url, timeout=timeout)
-            if resp.status_code == 200:
-                data = resp.json()
-                if data.get("routes"):
-                    best_route = data["routes"][0]
-                    raw_coords = best_route["geometry"]["coordinates"]
-                    coords = [(round(pt[1], 6), round(pt[0], 6)) for pt in raw_coords]
-                    distance_km = round(best_route["distance"] / 1000.0, 4)
-                    duration_min = round(best_route["duration"] / 60.0, 4)
+            with httpx.Client(timeout=timeout) as client:
+                resp = client.get(url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("routes"):
+                        best_route = data["routes"][0]
+                        raw_coords = best_route["geometry"]["coordinates"]
+                        coords = [(round(pt[1], 6), round(pt[0], 6)) for pt in raw_coords]
+                        distance_km = round(best_route["distance"] / 1000.0, 4)
+                        duration_min = round(best_route["duration"] / 60.0, 4)
 
-                    self._cache[cache_key] = {
-                        "coords": coords,
-                        "distance_km": distance_km,
-                        "duration_min": duration_min,
-                    }
-                    self._cache_dirty = True
-                    self._schedule_save()
-                    return (coords, distance_km, duration_min)
+                        self._cache[cache_key] = {
+                            "coords": coords,
+                            "distance_km": distance_km,
+                            "duration_min": duration_min,
+                        }
+                        self._cache_dirty = True
+                        self.save_cache()
+                        return (coords, distance_km, duration_min)
         except Exception as e:
             logger.debug(f"OSRM multi-stop routing error: {e}")
 
@@ -275,7 +218,7 @@ class OSMRouter:
             "duration_min": round(total_time_min, 4),
         }
         self._cache_dirty = True
-        self._schedule_save()
+        self.save_cache()
         return (total_coords, round(total_dist_km, 4), round(total_time_min, 4))
 
     @staticmethod

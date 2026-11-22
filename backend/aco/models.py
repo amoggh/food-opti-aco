@@ -71,11 +71,9 @@ class DeliveryPlan:
     late_orders_count: int = 0
     unserved_orders_count: int = 0
     fitness_cost: float = float("inf")
-    cold_orders_count: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "cold_orders_count": self.cold_orders_count,
             "total_distance_km": round(self.total_distance_km, 3),
             "total_delivery_time_min": round(self.total_delivery_time_min, 2),
             "late_delivery_penalty": round(self.late_delivery_penalty, 2),

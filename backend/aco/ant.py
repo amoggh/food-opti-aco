@@ -121,18 +121,17 @@ class Ant:
                 break
 
             # Calculate ACO transition probabilities P_ij = (tau^alpha * eta^beta) / sum
-            # Pheromone is normalised by tau_max so the transition rule is
-            # scale-free (bounds are rescaled dynamically by the colony).
-            tau_ref = self.pheromones.tau_max or 1.0
             weights: List[float] = []
             for cand in candidates:
-                tau = self.pheromones.get_pheromone(curr_node.node_id, cand.node_id) / tau_ref
+                tau = self.pheromones.get_pheromone(curr_node.node_id, cand.node_id)
                 eta = self._calculate_heuristic(curr_node, cand, curr_time)
                 weight = (tau ** self.config.alpha) * (eta ** self.config.beta)
-                weights.append(max(1e-12, weight))
+                weights.append(max(1e-6, weight))
 
             # Select candidate using roulette wheel / random choices
-            selected: ACOTaskNode = self.rng.choices(candidates, weights=weights, k=1)[0]
+            total_weight = sum(weights)
+            probs = [w / total_weight for w in weights]
+            selected: ACOTaskNode = self.rng.choices(candidates, weights=probs, k=1)[0]
 
             # Execute transition to selected node
             travel_dist = self.distance_matrix.get((curr_node.node_id, selected.node_id), 1.0)
