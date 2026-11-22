@@ -91,7 +91,3 @@ class TrafficModel:
             level_override=level_override,
         )
         return (distance_km / effective_speed) * 60.0
-
-    def clear_overrides(self) -> None:
-        """Resets all edge-specific traffic conditions back to default."""
-        self._edge_traffic.clear()

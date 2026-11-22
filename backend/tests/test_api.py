@@ -100,6 +100,18 @@ def test_simulation_dynamic_events_endpoints(client):
     )
     assert traffic_res.status_code == 200
 
+    # Traffic by node pair + multiplier (the payload the frontend sends)
+    traffic_pair_res = client.post(
+        "/api/simulation/events/traffic",
+        json={"source": "NODE_0001", "target": "NODE_0002", "multiplier": 2.5},
+    )
+    assert traffic_pair_res.status_code == 200
+    assert traffic_pair_res.json()["event"]["payload"] == {"edge_id": "EDGE_00001", "traffic_level": "HIGH"}
+
+    # Unknown road segment -> 404, not a crash
+    bad_res = client.post("/api/simulation/events/road-closure", json={"source": "NOPE", "target": "NADA"})
+    assert bad_res.status_code == 404
+
     # Trigger Road Closure
     closure_res = client.post(
         "/api/simulation/events/road-closure",
