@@ -1,5 +1,6 @@
 """Dynamic discrete-event food delivery simulation engine."""
 import math
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -14,6 +15,13 @@ from backend.preprocessing.pipeline import (
     ProcessedOrder,
     ProcessedRestaurant,
     ProcessedRider,
+)
+from backend.routing.closures import (
+    RoadClosure,
+    closure_from_path,
+    fix_path_for_closures,
+    nearest_distance_km,
+    path_hits,
 )
 from backend.routing.graph import RoadGraph, haversine_distance_km
 from backend.routing.router import RoutingEngine
@@ -50,11 +58,37 @@ class SimOrder:
     picked_up_at_min: Optional[float] = None
     delivered_at_min: Optional[float] = None
     is_late: bool = False
+    is_cold: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def food_age_min(self, now_min: float) -> Optional[float]:
+        """Minutes the food has waited since it was ready (frozen at delivery); None while still cooking."""
+        end = self.delivered_at_min if self.delivered_at_min is not None else now_min
+        if end < self.ready_time_min:
+            return None
+        return round(end - self.ready_time_min, 1)
+
+    def to_dict(self, now_min: Optional[float] = None) -> Dict[str, Any]:
         d = asdict(self)
         d["status"] = self.status.value
+        if now_min is not None:
+            d["food_age_min"] = self.food_age_min(now_min)
         return d
+
+
+def _thin_path(path: List[List[float]], min_step_km: float = 0.025) -> List[List[float]]:
+    """Drops vertices closer than ~25 m to the previous kept one (keeps the end) so snapshots stay small."""
+    if len(path) <= 2:
+        return [[round(p[0], 5), round(p[1], 5)] for p in path]
+    lat0 = math.radians(path[0][0])
+    kx, ky = 111.32 * math.cos(lat0), 110.574
+    step2 = min_step_km * min_step_km
+    out = [path[0]]
+    for p in path[1:-1]:
+        q = out[-1]
+        if ((p[1] - q[1]) * kx) ** 2 + ((p[0] - q[0]) * ky) ** 2 >= step2:
+            out.append(p)
+    out.append(path[-1])
+    return [[round(p[0], 5), round(p[1], 5)] for p in out]
 
 
 @dataclass
@@ -69,6 +103,11 @@ class SimRider:
     total_distance_km: float = 0.0
     orders_delivered: List[str] = field(default_factory=list)
     road_path: List[List[float]] = field(default_factory=list)
+    # Index in road_path of the vertex closest to the next stop (OSRM snaps stops onto the road,
+    # so the path may never pass within a fixed radius of an off-road restaurant/customer).
+    stop_marker: Optional[int] = None
+    marker_key: Optional[Tuple[int, str]] = None
+    detour_active: bool = False  # current road path bends around a road closure
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -90,7 +129,8 @@ class SimRider:
                 }
                 for s in self.assigned_stops
             ],
-            "road_path": self.road_path,
+            "road_path": _thin_path(self.road_path),
+            "detour_active": self.detour_active,
             "total_distance_km": round(self.total_distance_km, 3),
             "orders_delivered": list(self.orders_delivered),
         }
@@ -149,8 +189,9 @@ class SimulationEngine:
         # Dedicated Single-Order Focus Mode & Roadblock Detour State
         self.focused_order_id: Optional[str] = None
         self.focus_backup_state: Optional[Dict[str, Any]] = None
-        self.active_blocked_road_coords: List[List[float]] = []
-        self.active_blocked_edge_name: str = ""
+        # Closures on real (OSRM) road geometry; riders are detoured around them
+        self.road_closures: List[RoadClosure] = []
+        self._closure_seq: int = 0
 
         self._load_environment()
 
@@ -245,6 +286,7 @@ class SimulationEngine:
         self.is_running = False
         self.sim_time_min = 0.0
         self.closed_edges.clear()
+        self.road_closures.clear()
         self.traffic_model.clear_overrides()
         self.event_history.clear()
         self.active_plan = None
@@ -394,134 +436,133 @@ class SimulationEngine:
         }
 
     def clear_road_closures(self) -> None:
-        """Clears all active road closures and restores normal street paths."""
+        """Clears all road closures and restores normal routes for detoured riders."""
         self.closed_edges.clear()
-        self.active_blocked_road_coords.clear()
-        self.active_blocked_edge_name = ""
+        self.road_closures.clear()
         self.traffic_model.clear_overrides()
         if self.graph:
             for edge in self.graph.edges.values():
                 edge.is_closed = False
-                edge.traffic_multiplier = 1.0
         if self.router:
             self.router.clear_cache()
         for rider in self.riders.values():
-            if rider.assigned_stops:
+            if rider.detour_active:
+                rider.detour_active = False
                 self._update_rider_road_path(rider)
 
-    def block_order_route(self, order_id: str) -> Dict[str, Any]:
-        """
-        Blocks the exact road segment currently on the focused order's delivery path,
-        and recomputes an alternate optimal detour avoiding the barrier.
-        """
-        if self.focused_order_id != order_id:
-            self.set_focused_order(order_id)
+    def block_road_at(self, lat: float, lon: float, rider_id: Optional[str] = None) -> Dict[str, Any]:
+        """Closes ~250 m of the road nearest (lat, lon) on a courier's route and detours every
+        courier whose remaining route uses it."""
+        candidates = [self.riders[rider_id]] if rider_id and rider_id in self.riders else list(self.riders.values())
+        best, best_d = None, float("inf")
+        for r in candidates:
+            d = nearest_distance_km(r.road_path, (lat, lon))
+            if d < best_d:
+                best, best_d = r, d
+        coords = closure_from_path(best.road_path, (lat, lon)) if best else None
+        if not coords:
+            return {"error": "Click on or near a courier's route (within 150 m) to close that road.",
+                    "snapshot": self.get_snapshot()}
 
-        order = self.orders.get(order_id)
-        if not order:
-            return {"error": f"Order {order_id} not found", "snapshot": self.get_snapshot()}
+        self._closure_seq += 1
+        closure = RoadClosure(
+            closure_id=f"CLOSURE_{self._closure_seq}",
+            coords=coords,
+            name=f"Road closure #{self._closure_seq} near ({coords[len(coords) // 2][0]:.4f}, {coords[len(coords) // 2][1]:.4f})",
+        )
+        self.road_closures.append(closure)
 
-        rest = self.restaurants.get(order.restaurant_id)
-        cust = self.customers.get(order.customer_id)
-        rider = self.riders.get(order.assigned_rider_id) if order.assigned_rider_id else None
+        affected = [
+            r for r in self.riders.values()
+            if r.assigned_stops and len(r.road_path) >= 2
+            and path_hits(r.road_path, [closure], skip_near=(r.current_lat, r.current_lon)) is not None
+        ]
+        # Riders are independent: re-route them in parallel (OSRM calls dominate)
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            all_statuses = list(pool.map(self._apply_closures_to_path, affected))
 
-        if not rest or not cust:
-            return {"error": "Required order entities not found", "snapshot": self.get_snapshot()}
+        rerouted, access_only, no_detour = [], [], []
+        for r, statuses in zip(affected, all_statuses):
+            if "detoured" in statuses:
+                rerouted.append(r.rider_id)
+            if "access" in statuses:
+                access_only.append(r.rider_id)
+            if "blocked" in statuses:
+                no_detour.append(r.rider_id)
 
-        # Identify path start and end
-        if rider and order.status == OrderStatus.PICKED_UP:
-            start_lat, start_lon = rider.current_lat, rider.current_lon
-        else:
-            start_lat, start_lon = rest.latitude, rest.longitude
-
-        end_lat, end_lon = cust.latitude, cust.longitude
-
-        # Clear existing closures first
-        self.clear_road_closures()
-
-        # 1. Determine baseline physical road path
-        points_to_visit = [(start_lat, start_lon), (end_lat, end_lon)]
-        base_coords = []
-        if self.router and getattr(self.router, "osm_router", None):
-            raw_base, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
-            if raw_base:
-                base_coords = [[round(pt[0], 6), round(pt[1], 6)] for pt in raw_base]
-
-        if not base_coords or len(base_coords) < 4:
-            base_coords = [[start_lat, start_lon], [end_lat, end_lon]]
-
-        # 2. Extract the middle section of the road as the closed road segment
-        if len(base_coords) >= 6:
-            mid = len(base_coords) // 2
-            start_b = max(1, mid - 3)
-            end_b = min(len(base_coords) - 2, mid + 4)
-            blocked_slice = base_coords[start_b:end_b]
-            self.active_blocked_road_coords = blocked_slice
-            self.active_blocked_edge_name = f"Corridor Segment near ({blocked_slice[0][0]:.4f}, {blocked_slice[0][1]:.4f})"
-        else:
-            mid_lat = (start_lat + end_lat) / 2
-            mid_lon = (start_lon + end_lon) / 2
-            self.active_blocked_road_coords = [
-                [mid_lat - 0.001, mid_lon - 0.001],
-                [mid_lat + 0.001, mid_lon + 0.001]
-            ]
-            self.active_blocked_edge_name = "Primary Delivery Avenue"
-
-        edge_id = "ROAD_CLOSURE_FOCUSED"
-        self.closed_edges.add(edge_id)
-        self.traffic_model.close_edge(edge_id)
-
-        if self.router:
-            self.router.clear_cache()
-
-        # 3. Recompute rider route along alternate optimal street detour!
-        if rider:
-            self._update_rider_road_path(rider)
-
+        msg = f"Road closed: {len(rerouted)} courier(s) rerouted around it"
+        if access_only:
+            msg += f"; {', '.join(access_only)}: next stop is on the closed street, so only the final approach uses it"
+        if no_detour:
+            msg += f"; no clear detour found for {', '.join(no_detour)}"
         return {
-            "order_id": order_id,
-            "blocked_edge_id": edge_id,
-            "source": "Street Blockage Start",
-            "target": "Street Blockage End",
-            "coords": self.active_blocked_road_coords,
-            "message": f"Emergency road block placed on road. Alternate optimal detour calculated.",
+            "closure": closure.to_dict(),
+            "rerouted_riders": rerouted,
+            "access_only_riders": access_only,
+            "no_detour_riders": no_detour,
+            "message": msg + ".",
             "snapshot": self.get_snapshot(),
         }
 
+    def _apply_closures_to_path(self, rider: SimRider) -> set:
+        """Re-routes only the legs of the rider's current path that cross a closure."""
+        if not (self.router and self.router.osm_router and self.road_closures and rider.assigned_stops):
+            return set()
+        coords, statuses = fix_path_for_closures(
+            self.router.osm_router,
+            rider.road_path,
+            [(s.lat, s.lon) for s in rider.assigned_stops],
+            self.road_closures,
+            (rider.current_lat, rider.current_lon),
+        )
+        if coords and len(coords) >= 2:
+            rider.road_path = [[round(p[0], 6), round(p[1], 6)] for p in coords]
+        rider.detour_active = "detoured" in statuses or rider.detour_active
+        return statuses
+
+    def block_order_route(self, order_id: str) -> Dict[str, Any]:
+        """Focus an order and close a road in the middle of its courier's remaining route."""
+        if self.focused_order_id != order_id:
+            self.set_focused_order(order_id)
+        order = self.orders.get(order_id)
+        if not order:
+            return {"error": f"Order {order_id} not found", "snapshot": self.get_snapshot()}
+        rider = self.riders.get(order.assigned_rider_id) if order.assigned_rider_id else None
+        if not rider or len(rider.road_path) < 6:
+            return {"error": "The focused order has no active courier route to block.", "snapshot": self.get_snapshot()}
+
+        self.clear_road_closures()
+        path = rider.road_path
+        mid = path[int(len(path) * 0.45)]
+        res = self.block_road_at(mid[0], mid[1], rider_id=rider.rider_id)
+        if "error" in res:
+            return res
+        res.update({
+            "order_id": order_id,
+            "blocked_edge_id": res["closure"]["edge_id"],
+            "coords": res["closure"]["coords"],
+        })
+        return res
+
     def _update_rider_road_path(self, rider: SimRider) -> None:
-        """Computes and sets the exact road network coordinate path for a rider's assigned stops."""
+        """Computes the road path through the rider's remaining stops, detouring around closures."""
         if not rider.assigned_stops:
             rider.road_path = []
+            rider.detour_active = False
             return
 
         points_to_visit = [(rider.current_lat, rider.current_lon)] + [
             (s.lat, s.lon) for s in rider.assigned_stops
         ]
 
-        # Use OSMRouter for real physical road coordinates
         if self.router and getattr(self.router, "osm_router", None):
-            if not self.closed_edges:
-                coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
-                if coords and len(coords) >= 2:
-                    rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in coords]
-                    return
-            else:
-                # When an edge/street is closed: dynamically compute an alternate street detour!
-                base_coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
-                if base_coords and len(base_coords) >= 6:
-                    mid = len(base_coords) // 2
-                    p_mid = base_coords[mid]
-                    dlat = base_coords[min(len(base_coords) - 1, mid + 3)][0] - base_coords[max(0, mid - 3)][0]
-                    dlon = base_coords[min(len(base_coords) - 1, mid + 3)][1] - base_coords[max(0, mid - 3)][1]
-                    norm = max(1e-6, (dlat ** 2 + dlon ** 2) ** 0.5)
-                    # Detour offset perpendicular to road (~500m bypass)
-                    offset_lat = p_mid[0] + (-dlon / norm) * 0.0055
-                    offset_lon = p_mid[1] + (dlat / norm) * 0.0055
-                    detour_stops = [points_to_visit[0], (offset_lat, offset_lon), points_to_visit[-1]]
-                    detour_coords, _, _ = self.router.osm_router.get_route_for_stops(detour_stops)
-                    if detour_coords and len(detour_coords) >= 2:
-                        rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in detour_coords]
-                        return
+            coords, _, _ = self.router.osm_router.get_route_for_stops(points_to_visit)
+            if coords and len(coords) >= 2:
+                rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in coords]
+                rider.detour_active = False
+                if self.road_closures:
+                    self._apply_closures_to_path(rider)
+                return
 
         coords: List[List[float]] = []
         for i in range(len(points_to_visit) - 1):
@@ -545,12 +586,15 @@ class SimulationEngine:
                     coords.extend(seg_pts[1:])
                 else:
                     coords.extend(seg_pts)
-                    coords.extend(seg_pts)
 
         rider.road_path = coords
 
     def _advance_rider(self, rider: SimRider, dt: float, avg_speed_kmh: float = 35.0) -> None:
         """Advances an individual rider along their assigned road coordinates."""
+        if self._is_waiting_for_food(rider):
+            self._process_rider_stop_arrival(rider)  # picks up once the food is ready
+            rider.status = RiderStatus.BUSY
+            return
         if not rider.road_path or len(rider.road_path) < 2:
             self._update_rider_road_path(rider)
 
@@ -566,6 +610,13 @@ class SimulationEngine:
         travel_dist = (speed / 60.0) * dt
 
         while travel_dist > 1e-6 and len(rider.road_path) >= 2:
+            self._refresh_stop_marker(rider)
+            if rider.stop_marker == 0 and rider.assigned_stops:
+                # Already at the road point nearest the stop
+                target_stop = rider.assigned_stops[0]
+                rider.current_lat, rider.current_lon = target_stop.lat, target_stop.lon
+                self._process_rider_stop_arrival(rider)
+                break
             next_pt = rider.road_path[1]
             seg_dist = haversine_distance_km(
                 rider.current_lat, rider.current_lon, next_pt[0], next_pt[1]
@@ -578,6 +629,8 @@ class SimulationEngine:
                 rider.current_lon = next_pt[1]
                 rider.road_path.pop(0)
                 rider.road_path[0] = [rider.current_lat, rider.current_lon]
+                if rider.stop_marker is not None:
+                    rider.stop_marker -= 1
 
                 # Check if reached target stop
                 if rider.assigned_stops:
@@ -585,7 +638,8 @@ class SimulationEngine:
                     dist_to_stop = haversine_distance_km(
                         rider.current_lat, rider.current_lon, target_stop.lat, target_stop.lon
                     )
-                    if dist_to_stop <= 0.08 or len(rider.road_path) <= 1:
+                    reached_marker = rider.stop_marker is not None and rider.stop_marker <= 0
+                    if dist_to_stop <= 0.08 or reached_marker or len(rider.road_path) <= 1:
                         rider.current_lat = target_stop.lat
                         rider.current_lon = target_stop.lon
                         self._process_rider_stop_arrival(rider)
@@ -610,8 +664,32 @@ class SimulationEngine:
                             self._process_rider_stop_arrival(rider)
                 else:
                     rider.road_path.pop(0)
+                    if rider.stop_marker is not None:
+                        rider.stop_marker -= 1
 
         rider.status = RiderStatus.BUSY if (rider.assigned_stops or rider.carried_orders) else RiderStatus.AVAILABLE
+
+    def _refresh_stop_marker(self, rider: SimRider) -> None:
+        """Locates the road_path vertex nearest the next stop; recomputed when the path or stop changes."""
+        if not rider.assigned_stops or len(rider.road_path) < 2:
+            rider.stop_marker, rider.marker_key = None, None
+            return
+        stop = rider.assigned_stops[0]
+        key = (id(rider.road_path), stop.node_id)
+        if rider.marker_key == key and rider.stop_marker is not None:
+            return
+        dists = [haversine_distance_km(pt[0], pt[1], stop.lat, stop.lon) for pt in rider.road_path]
+        best = min(dists)
+        # Earliest vertex that is (nearly) as close as the closest one: tours may pass a spot twice
+        rider.stop_marker = next(i for i, d in enumerate(dists) if d <= best + 0.02)
+        rider.marker_key = key
+
+    def _is_waiting_for_food(self, rider: SimRider) -> bool:
+        """True if the rider is parked at the next pickup's restaurant."""
+        if not rider.assigned_stops or rider.assigned_stops[0].task_type != "pickup":
+            return False
+        stop = rider.assigned_stops[0]
+        return haversine_distance_km(rider.current_lat, rider.current_lon, stop.lat, stop.lon) <= 0.01
 
     def _process_rider_stop_arrival(self, rider: SimRider) -> None:
         """Handles arrival at a stop (pickup, dropoff, or rider_start) and updates route."""
@@ -624,6 +702,9 @@ class SimulationEngine:
         if target_stop.task_type == "pickup":
             oid = target_stop.order_id
             order = self.orders.get(oid)
+            if order and order.status != OrderStatus.READY and self.sim_time_min < order.ready_time_min:
+                # Food still cooking: courier waits at the restaurant (route stays on the map)
+                return
             if order:
                 order.status = OrderStatus.PICKED_UP
                 order.picked_up_at_min = self.sim_time_min
@@ -641,6 +722,7 @@ class SimulationEngine:
                 order.status = OrderStatus.DELIVERED
                 order.delivered_at_min = self.sim_time_min
                 order.is_late = self.sim_time_min > order.deadline_min
+                order.is_cold = (self.sim_time_min - order.ready_time_min) > self.config.freshness_limit_min
                 if oid in rider.carried_orders:
                     rider.carried_orders.remove(oid)
                 if oid not in rider.orders_delivered:
@@ -699,39 +781,48 @@ class SimulationEngine:
 
         # 3. Dynamic continuous dispatching for remaining unassigned orders
         if self.is_running or self.active_plan is not None:
-            unassigned_orders = [
-                o for o in self.orders.values()
-                if o.assigned_rider_id is None
-                and o.status in (OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY)
-            ]
-
-            if unassigned_orders:
-                idle_riders = [
-                    r for r in self.riders.values()
-                    if r.status != RiderStatus.UNAVAILABLE and not r.assigned_stops and not r.carried_orders
-                ]
-
-                total_active = len([r for r in self.riders.values() if r.status != RiderStatus.UNAVAILABLE])
-                should_dispatch = False
-
-                if idle_riders:
-                    if len(idle_riders) >= 4:
-                        should_dispatch = True
-                    elif len(unassigned_orders) <= len(idle_riders):
-                        should_dispatch = True
-                    elif len(idle_riders) == total_active:
-                        should_dispatch = True
-                    elif (self.sim_time_min - self.last_dispatch_time_min) >= 8.0:
-                        should_dispatch = True
-
-                if should_dispatch:
-                    total_cap = sum(r.capacity for r in idle_riders)
-                    batch_size = min(len(unassigned_orders), total_cap)
-                    if batch_size > 0:
-                        batch = unassigned_orders[:batch_size]
-                        self.dispatch_batch(batch, idle_riders, aco_ants=8, aco_iterations=10)
+            self.dispatch_pending()
 
         return self.get_snapshot()
+
+    def dispatch_pending(self) -> None:
+        """Batches unassigned orders onto idle couriers with ACO when enough couriers are free."""
+        unassigned_orders = [
+            o for o in self.orders.values()
+            if o.assigned_rider_id is None
+            and o.status in (OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY)
+        ]
+
+        if unassigned_orders:
+            idle_riders = [
+                r for r in self.riders.values()
+                if r.status != RiderStatus.UNAVAILABLE and not r.assigned_stops and not r.carried_orders
+            ]
+
+            total_active = len([r for r in self.riders.values() if r.status != RiderStatus.UNAVAILABLE])
+            should_dispatch = False
+
+            if idle_riders:
+                if len(idle_riders) >= 4:
+                    should_dispatch = True
+                elif len(unassigned_orders) <= len(idle_riders):
+                    should_dispatch = True
+                elif len(idle_riders) == total_active:
+                    should_dispatch = True
+                elif (self.sim_time_min - self.last_dispatch_time_min) >= 8.0:
+                    should_dispatch = True
+
+            if should_dispatch:
+                total_cap = sum(r.capacity for r in idle_riders)
+                batch_size = min(len(unassigned_orders), total_cap)
+                if batch_size > 0:
+                    batch = unassigned_orders[:batch_size]
+                    self.dispatch_batch(batch, idle_riders, aco_ants=8, aco_iterations=10)
+
+    def warm_start(self) -> None:
+        """Runs the first dispatch (and its OSRM road-geometry fetch) ahead of time so that
+        pressing Run starts moving immediately."""
+        self.dispatch_pending()
 
     # Dynamic Event Handlers
     def trigger_event(self, event: SimEvent) -> Dict[str, Any]:
@@ -757,7 +848,9 @@ class SimulationEngine:
         return {"event": event.to_dict(), "message": result_msg, "snapshot": self.get_snapshot()}
 
     def _handle_new_order(self, payload: Dict[str, Any]) -> str:
-        oid = payload.get("order_id", f"ORD_DYN_{len(self.orders) + 1:04d}")
+        oid = payload.get("order_id") or f"ORD_DYN_{len(self.orders) + 1:04d}"
+        if payload["restaurant_id"] not in self.restaurants or payload["customer_id"] not in self.customers:
+            raise ValueError("Unknown restaurant_id or customer_id")
         rest_id = payload["restaurant_id"]
         cust_id = payload["customer_id"]
         prep_time = int(payload.get("preparation_time", 15))
@@ -785,23 +878,23 @@ class SimulationEngine:
         return f"Traffic on edge {edge_id} updated to {level.value}."
 
     def _handle_road_closure(self, payload: Dict[str, Any]) -> str:
-        edge_id = payload.get("edge_id") or f"{payload.get('source')}_{payload.get('target')}"
+        edge_id = payload["edge_id"]
         self.closed_edges.add(edge_id)
-        if self.graph:
-            for edge in self.graph.edges:
-                e_id = getattr(edge, 'edge_id', None) or f"{edge.source}_{edge.target}"
-                rev_id = f"{edge.target}_{edge.source}"
-                if e_id == edge_id or rev_id == edge_id or (edge.source == payload.get("source") and edge.target == payload.get("target")):
-                    edge.is_closed = True
-                    edge.traffic_multiplier = 999.0
-        # Severe slowdown effectively blocks traversal
-        self.traffic_model.set_edge_traffic(edge_id, TrafficLevel.SEVERE)
+        # Close the segment in both directions so Dijkstra routes around it
+        to_close = {edge_id}
+        if self.graph and edge_id in self.graph.edges:
+            e = self.graph.edges[edge_id]
+            rev = self.graph.get_edge(e.v, e.u)
+            if rev:
+                to_close.add(rev.edge_id)
+        for e_id in to_close:
+            self.traffic_model.close_edge(e_id)
+            if self.graph and e_id in self.graph.edges:
+                self.graph.edges[e_id].is_closed = True
         if self.router:
             self.router.clear_cache()
-        # Immediately re-compute rider road paths for active couriers so the detour shows right away
-        for rider in self.riders.values():
-            if rider.assigned_stops:
-                self._update_rider_road_path(rider)
+        # Grid-graph closures affect ACO travel-time matrices (Dijkstra), not the OSRM road
+        # geometry riders follow; map-level closures go through block_road_at().
         return f"Road closure active on edge {edge_id}."
 
     def _handle_rider_unavailable(self, payload: Dict[str, Any]) -> str:
@@ -812,16 +905,21 @@ class SimulationEngine:
 
         rider.status = RiderStatus.UNAVAILABLE
         # Extract and unassign uncompleted stops
-        uncompleted_order_ids = [
-            s.order_id for s in rider.assigned_stops if s.order_id and s.task_type == "pickup"
-        ]
+        # Release every undelivered order: not-yet-picked ones and those already in the bag
+        # (bagged food is treated as re-collected from the restaurant by the next courier).
+        uncompleted_order_ids = {
+            s.order_id for s in rider.assigned_stops if s.order_id
+        } | set(rider.carried_orders)
         for oid in uncompleted_order_ids:
-            if oid in self.orders:
-                self.orders[oid].assigned_rider_id = None
-                if self.orders[oid].status == OrderStatus.PICKED_UP:
-                    self.orders[oid].status = OrderStatus.READY
+            order = self.orders.get(oid)
+            if order and order.status != OrderStatus.DELIVERED:
+                order.assigned_rider_id = None
+                if order.status == OrderStatus.PICKED_UP:
+                    order.status = OrderStatus.READY
 
         rider.assigned_stops.clear()
+        rider.carried_orders.clear()
+        rider.road_path = []
         return f"Rider {rider_id} is now UNAVAILABLE. Unfulfilled orders unassigned."
 
     def _handle_rider_available(self, payload: Dict[str, Any]) -> str:
@@ -838,10 +936,24 @@ class SimulationEngine:
         available_riders: List[SimRider],
         aco_ants: int = 8,
         aco_iterations: int = 10,
+        aco_overrides: Optional[Dict[str, Any]] = None,
+        local_search_time_limit_s: float = 0.3,
     ) -> Optional[DeliveryPlan]:
         """Dispatches and routes a batch of orders to available couriers using ACO."""
         if not orders_to_dispatch or not available_riders:
             return None
+
+        # Re-dispatching an order that is already queued on a rider: drop the old stops first,
+        # otherwise the order ends up on two riders' routes.
+        released_from: Set[str] = set()
+        for o in orders_to_dispatch:
+            prev = self.riders.get(o.assigned_rider_id) if o.assigned_rider_id else None
+            if prev and o.order_id not in prev.carried_orders:
+                before = len(prev.assigned_stops)
+                prev.assigned_stops = [s for s in prev.assigned_stops if s.order_id != o.order_id]
+                if len(prev.assigned_stops) != before:
+                    released_from.add(prev.rider_id)
+                o.assigned_rider_id = None
 
         orders_to_dispatch = sorted(orders_to_dispatch, key=lambda o: (o.order_time_min, o.deadline_min))
 
@@ -871,15 +983,21 @@ class SimulationEngine:
             for r in available_riders
         ]
 
+        params = {
+            "random_seed": 42,
+            "alpha": self.config.alpha,
+            "beta": self.config.beta,
+            "evaporation_rate": self.config.evaporation_rate,
+        }
+        params.update({k: v for k, v in (aco_overrides or {}).items() if v is not None})
         aco_cfg = ACOConfig(
             num_ants=aco_ants,
             num_iterations=aco_iterations,
-            random_seed=42,
-            alpha=self.config.alpha,
-            beta=self.config.beta,
-            evaporation_rate=self.config.evaporation_rate,
+            # Live dispatch must stay interactive: cap the local-search polish
+            local_search_time_limit_s=local_search_time_limit_s,
+            **params,
         )
-        aco = ACOEngine(config=aco_cfg, routing_engine=self.router)
+        aco = ACOEngine(config=aco_cfg, routing_engine=self.router, graph_matrices=False)
         aco.setup_problem(
             restaurants=list(self.restaurants.values()),
             customers=list(self.customers.values()),
@@ -898,13 +1016,16 @@ class SimulationEngine:
             stops_to_assign = [s for s in tour.stops if s.task_type != "rider_start"]
             if stops_to_assign and r_id in self.riders:
                 rider = self.riders[r_id]
+                had_stops = bool(rider.assigned_stops)
                 rider.assigned_stops.extend(stops_to_assign)
                 rider.status = RiderStatus.BUSY
                 for s in stops_to_assign:
                     if s.order_id and s.order_id in self.orders:
                         self.orders[s.order_id].assigned_rider_id = r_id
                         assigned_order_ids.add(s.order_id)
-                if getattr(tour, "road_path_coordinates", None):
+                # The ACO tour geometry covers only the new stops; recompute when the rider
+                # still has earlier stops queued, or when closures must be avoided.
+                if getattr(tour, "road_path_coordinates", None) and not had_stops and not self.road_closures:
                     rider.road_path = [[round(pt[0], 6), round(pt[1], 6)] for pt in tour.road_path_coordinates]
                 else:
                     self._update_rider_road_path(rider)
@@ -957,6 +1078,10 @@ class SimulationEngine:
             for r in affected_riders:
                 self._update_rider_road_path(r)
 
+        assigned_now = {r_id for r_id, t in result.best_plan.tours.items() if len(t.stops) > 1}
+        for r_id in released_from - assigned_now:
+            self._update_rider_road_path(self.riders[r_id])
+
         return self.active_plan
 
     def reoptimize(
@@ -964,6 +1089,8 @@ class SimulationEngine:
         aco_ants: int = 6,
         aco_iterations: int = 6,
         max_orders: Optional[int] = 10,
+        aco_overrides: Optional[Dict[str, Any]] = None,
+        local_search_time_limit_s: float = 0.3,
     ) -> Optional[DeliveryPlan]:
         """Runs ACO with riders starting from their current spatial locations to route remaining orders."""
         active_orders = [
@@ -995,6 +1122,8 @@ class SimulationEngine:
             available_riders=active_riders,
             aco_ants=aco_ants,
             aco_iterations=aco_iterations,
+            aco_overrides=aco_overrides,
+            local_search_time_limit_s=local_search_time_limit_s,
         )
 
     def get_snapshot(self) -> Dict[str, Any]:
@@ -1015,23 +1144,22 @@ class SimulationEngine:
         ]
         avg_delivery_time = round(sum(delivery_times) / len(delivery_times), 2) if delivery_times else 0.0
 
+        # Food freshness: how long food waited between ready and hand-off to the customer
+        food_ages = [o.food_age_min(self.sim_time_min) for o in delivered]
+        food_ages = [a for a in food_ages if a is not None]
+        avg_food_age = round(sum(food_ages) / len(food_ages), 1) if food_ages else 0.0
+        cold = [o for o in delivered if o.is_cold]
+
         blocked_info = []
-        if getattr(self, "active_blocked_road_coords", None) and len(self.active_blocked_road_coords) >= 2:
-            blocked_info.append({
-                "edge_id": "ROAD_CLOSURE_FOCUSED",
-                "u": "Closed Segment Start",
-                "v": "Closed Segment End",
-                "name": getattr(self, "active_blocked_edge_name", "Emergency Street Closure"),
-                "coords": self.active_blocked_road_coords
-            })
+        blocked_info.extend(c.to_dict() for c in self.road_closures)
 
         if self.graph:
             for edge_id in self.closed_edges:
                 if edge_id == "ROAD_CLOSURE_FOCUSED":
                     continue
-                parts = edge_id.split("_")
-                if len(parts) >= 2:
-                    u_id, v_id = parts[0], parts[1]
+                edge = self.graph.edges.get(edge_id)
+                if edge:
+                    u_id, v_id = edge.u, edge.v
                     node_u = self.graph.nodes.get(u_id)
                     node_v = self.graph.nodes.get(v_id)
                     if node_u and node_v:
@@ -1057,9 +1185,17 @@ class SimulationEngine:
                 "active_riders": len(active_riders),
                 "total_distance_km": round(total_dist, 2),
                 "avg_delivery_time_min": avg_delivery_time,
+                "avg_food_age_min": avg_food_age,
+                "cold_orders": len(cold),
+                "fresh_percentage": round(100.0 - len(cold) / len(delivered) * 100.0, 1) if delivered else 100.0,
+                "freshness_limit_min": self.config.freshness_limit_min,
             },
+            "active_plan_cost": (
+                self.active_plan.fitness_cost
+                if self.active_plan and self.active_plan.fitness_cost != float("inf") else None
+            ),
             "riders": [r.to_dict() for r in self.riders.values()],
-            "orders": [o.to_dict() for o in self.orders.values()],
+            "orders": [o.to_dict(self.sim_time_min) for o in self.orders.values()],
             "closed_edges": list(self.closed_edges),
             "blocked_edges_info": blocked_info,
             "last_reoptimization_min": self.last_reopt_time_min,

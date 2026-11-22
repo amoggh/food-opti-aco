@@ -753,3 +753,9 @@ html, body {
   background: rgba(255, 255, 255, 0.04);
   font-weight: 500;
 }
+
+/* Operations map: "Block a road" mode */
+.road-block-mode.leaflet-container,
+.road-block-mode .leaflet-interactive {
+  cursor: crosshair !important;
+}

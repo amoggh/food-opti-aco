@@ -70,7 +70,7 @@ export const api = {
 
   // Dynamic disruption events
   async injectNewOrder(orderData) {
-    return handleResponse(await fetch(`${API_BASE}/simulation/events/order`, {
+    return handleResponse(await fetch(`${API_BASE}/simulation/events/new-order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData),
@@ -95,6 +95,13 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ order_id: orderId }),
+    }));
+  },
+  async blockRoadAt(lat, lon, riderId = null) {
+    return handleResponse(await fetch(`${API_BASE}/simulation/events/block-road`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat, lon, rider_id: riderId }),
     }));
   },
   async clearRoadClosures() {
