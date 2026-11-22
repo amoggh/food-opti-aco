@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import demoScenariosData from '../../data/demoScenarios.json';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Route, 
-  MapPin, 
-  Store, 
-  User, 
-  Sparkles, 
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  AlertTriangle,
+  CheckCircle2,
+  Route,
+  MapPin,
+  Store,
+  User,
+  Sparkles,
   ArrowRight,
   ShieldAlert,
   Gauge,
@@ -22,6 +22,53 @@ import {
   Zap,
   TrendingUp
 } from 'lucide-react';
+
+// Computes cumulative physical road distances along GPS waypoints in meters
+function getRouteDistances(points) {
+  if (!points || points.length < 2) return { dists: [0], total: 0 };
+  const dists = [0];
+  let total = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    const [lat1, lon1] = points[i];
+    const [lat2, lon2] = points[i + 1];
+    const dLat = (lat2 - lat1) * 111320;
+    const dLon = (lon2 - lon1) * 111320 * Math.cos(((lat1 + lat2) * 0.5 * Math.PI) / 180);
+    const d = Math.sqrt(dLat * dLat + dLon * dLon);
+    total += d;
+    dists.push(total);
+  }
+  return { dists, total };
+}
+
+// Uniform physical distance interpolation along road curve
+function getPointAtProgress(points, distData, progress) {
+  if (!points || points.length === 0) return { coord: [0, 0], idx: 0 };
+  if (points.length === 1 || !distData || distData.total <= 0) {
+    return { coord: points[0], idx: 0 };
+  }
+
+  const pClamped = Math.max(0, Math.min(1, progress));
+  const targetDist = pClamped * distData.total;
+  const { dists } = distData;
+
+  let idx = 0;
+  while (idx < dists.length - 1 && dists[idx + 1] < targetDist) {
+    idx++;
+  }
+  if (idx >= points.length - 1) {
+    return { coord: points[points.length - 1], idx: points.length - 1 };
+  }
+
+  const segDist = dists[idx + 1] - dists[idx];
+  const subRatio = segDist > 0 ? (targetDist - dists[idx]) / segDist : 0;
+  const pA = points[idx];
+  const pB = points[idx + 1];
+
+  const lat = pA[0] + (pB[0] - pA[0]) * subRatio;
+  const lon = pA[1] + (pB[1] - pA[1]) * subRatio;
+
+  return { coord: [lat, lon], idx };
+}
 
 export default function DemoMap() {
   const mapContainerRef = useRef(null);
@@ -45,20 +92,37 @@ export default function DemoMap() {
   const progressRef = useRef(0);
   const isPlayingRef = useRef(false);
   const speedRef = useRef(1);
+  const roadblockActiveRef = useRef(false);
+  const activePointsRef = useRef([]);
+  const distDataRef = useRef({ dists: [0], total: 0 });
 
   // Layers
   const layersRef = useRef({
     primaryRoute: null,
     detourRoute: null,
+    traveledTrail: null,
     roadblockSegment: null,
     roadblockMarkers: null,
     restaurantMarker: null,
-    customerMarker: null
+    customerMarker: null,
+    courierLayer: null
   });
 
   // Calculate active points and metrics
   const activeRoute = roadblockActive ? scenario.detour : scenario.primary;
   const activePoints = activeRoute.points;
+
+  // Physical road distances for uniform velocity
+  const distData = useMemo(() => {
+    return getRouteDistances(activePoints);
+  }, [activePoints]);
+
+  // Keep refs in sync for the animation loop
+  useEffect(() => {
+    activePointsRef.current = activePoints;
+    distDataRef.current = distData;
+    roadblockActiveRef.current = roadblockActive;
+  }, [activePoints, distData, roadblockActive]);
 
   // Identify where detour diverges from primary
   const divergenceIndex = useMemo(() => {
@@ -103,18 +167,23 @@ export default function DemoMap() {
     });
     osmDark.addTo(map);
 
-    // Create layer groups
+    // Create layer groups in strict rendering order
     layersRef.current.primaryRoute = L.layerGroup().addTo(map);
     layersRef.current.detourRoute = L.layerGroup().addTo(map);
     layersRef.current.roadblockSegment = L.layerGroup().addTo(map);
     layersRef.current.roadblockMarkers = L.layerGroup().addTo(map);
+    layersRef.current.traveledTrail = L.layerGroup().addTo(map);
     layersRef.current.restaurantMarker = L.layerGroup().addTo(map);
     layersRef.current.customerMarker = L.layerGroup().addTo(map);
+    layersRef.current.courierLayer = L.layerGroup().addTo(map);
 
     mapRef.current = map;
 
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (courierMarkerRef.current) {
+        courierMarkerRef.current = null;
+      }
       map.remove();
       mapRef.current = null;
     };
@@ -123,12 +192,13 @@ export default function DemoMap() {
   // 2. Center and Zoom on Scenario change
   useEffect(() => {
     if (!mapRef.current) return;
-    mapRef.current.flyTo(scenario.center, scenario.zoom, { duration: 1.0 });
+    mapRef.current.flyTo(scenario.center, scenario.zoom, { duration: 0.8 });
     // Reset playback on scenario switch
     setIsPlaying(false);
     isPlayingRef.current = false;
     setCourierProgress(0);
     progressRef.current = 0;
+    setRoadblockActive(false);
   }, [selectedScenarioKey]);
 
   // 3. Render Static Markers: Restaurant and Customer
@@ -258,17 +328,18 @@ export default function DemoMap() {
       // Ambient glow
       L.polyline(scenario.primary.points, {
         color: '#38bdf8',
-        weight: 9,
-        opacity: 0.3,
+        weight: 8,
+        opacity: 0.25,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(primaryLayer);
 
-      // Main crisp road polyline
+      // Planned base road polyline (subtle dashed so traveled trail pops)
       L.polyline(scenario.primary.points, {
         color: '#38bdf8',
-        weight: 4.5,
-        opacity: 0.95,
+        weight: 4.0,
+        opacity: 0.45,
+        dashArray: '5, 7',
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(primaryLayer);
@@ -279,22 +350,22 @@ export default function DemoMap() {
       // & ACO DETOUR SPRINGS INTO ACTION
       // ==========================================
 
-      // 1. Draw the initial approach up to the diversion junction in solid cyan
+      // 1. Initial approach up to the diversion junction
       const approachPts = scenario.primary.points.slice(0, divergenceIndex + 1);
       if (approachPts.length >= 2) {
         L.polyline(approachPts, {
           color: '#38bdf8',
-          weight: 4.5,
-          opacity: 0.85,
+          weight: 4.0,
+          opacity: 0.7,
           lineCap: 'round',
           lineJoin: 'round'
         }).addTo(primaryLayer);
       }
 
-      // 2. Draw the blocked road segment directly ON THE ROAD CURVE in warning red
+      // 2. Blocked road segment in warning red
       const blockedRoadPts = scenario.roadblock?.points || [scenario.roadblock.start, scenario.roadblock.end];
 
-      // Red warning glow on the road
+      // Red warning glow
       L.polyline(blockedRoadPts, {
         color: '#ef4444',
         weight: 12,
@@ -325,7 +396,6 @@ export default function DemoMap() {
       const exitPt = blockedRoadPts[blockedRoadPts.length - 1];
       const midPt = scenario.roadblock.barrier_pos || blockedRoadPts[Math.floor(blockedRoadPts.length / 2)];
 
-      // Main centered barrier badge
       const barrierIcon = L.divIcon({
         className: 'demo-barrier-icon',
         html: `
@@ -353,7 +423,6 @@ export default function DemoMap() {
 
       L.marker(midPt, { icon: barrierIcon }).addTo(roadblockMarkLayer);
 
-      // Barricade cones at entry/exit of closed segment
       const coneIcon = L.divIcon({
         className: 'demo-cone-icon',
         html: `<div style="font-size: 15px; filter: drop-shadow(0 0 6px #ef4444);">🚧</div>`,
@@ -363,21 +432,22 @@ export default function DemoMap() {
       L.marker(entrancePt, { icon: coneIcon }).addTo(roadblockMarkLayer);
       L.marker(exitPt, { icon: coneIcon }).addTo(roadblockMarkLayer);
 
-      // 3. Draw Alternate Detour Route in Vivid Emerald Green
+      // 3. Alternate Detour Route in Vivid Emerald Green
       // Ambient Detour Glow
       L.polyline(scenario.detour.points, {
         color: '#10b981',
-        weight: 10,
-        opacity: 0.35,
+        weight: 9,
+        opacity: 0.25,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(detourLayer);
 
-      // Sharp Detour Polyline
+      // Dashed Detour Base Polyline
       L.polyline(scenario.detour.points, {
         color: '#10b981',
-        weight: 4.5,
-        opacity: 0.98,
+        weight: 4.0,
+        opacity: 0.45,
+        dashArray: '5, 7',
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(detourLayer);
@@ -408,88 +478,178 @@ export default function DemoMap() {
     }
   }, [scenario, roadblockActive, divergenceIndex]);
 
-  // 5. Courier Position Interpolation along Active Road Polyline
-  const currentCourierCoord = useMemo(() => {
-    const pts = activePoints;
-    if (!pts || pts.length === 0) return [scenario.restaurant.lat, scenario.restaurant.lon];
-    if (pts.length === 1) return pts[0];
+  // 5. Setup Courier Marker in Dedicated Layer
+  const setupCourierMarker = useCallback((coord, isDetour) => {
+    if (!mapRef.current || !layersRef.current.courierLayer) return;
 
-    const totalSegs = pts.length - 1;
-    const scaled = courierProgress * totalSegs;
-    const segIdx = Math.min(Math.floor(scaled), totalSegs - 1);
-    const subProgress = scaled - segIdx;
+    layersRef.current.courierLayer.clearLayers();
+    courierMarkerRef.current = null;
 
-    const pA = pts[segIdx];
-    const pB = pts[segIdx + 1];
+    const activeColor = isDetour ? '#10b981' : '#38bdf8';
 
-    const lat = pA[0] + (pB[0] - pA[0]) * subProgress;
-    const lon = pA[1] + (pB[1] - pA[1]) * subProgress;
-    return [lat, lon];
-  }, [activePoints, courierProgress, scenario]);
+    const icon = L.divIcon({
+      className: 'demo-courier-div-icon',
+      html: `
+        <div class="demo-courier-wrapper" style="
+          position: relative;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <!-- Pulsing radar glow ring -->
+          <div class="demo-radar-pulse" style="
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: ${activeColor};
+            opacity: 0.45;
+            animation: demoRadarPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+            pointer-events: none;
+          "></div>
 
-  // 6. Update or Create Animated Courier Marker
-  useEffect(() => {
-    if (!mapRef.current) return;
-
-    const coord = currentCourierCoord;
-    const activeColor = roadblockActive ? '#10b981' : '#38bdf8';
-
-    if (!courierMarkerRef.current) {
-      const icon = L.divIcon({
-        className: 'demo-courier-marker',
-        html: `
-          <div style="
+          <!-- Main vehicle circle with package badge -->
+          <div class="demo-courier-disc" style="
+            position: relative;
             background: #09090b;
             border: 2.5px solid ${activeColor};
             color: #ffffff;
-            width: 34px;
-            height: 34px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 18px ${activeColor};
-            font-size: 17px;
-            transition: border-color 0.3s;
+            box-shadow: 0 0 20px ${activeColor}, 0 4px 12px rgba(0,0,0,0.8);
+            font-size: 19px;
+            z-index: 2;
           ">
             🛵
+            <span style="
+              position: absolute;
+              bottom: -3px;
+              right: -3px;
+              background: #f59e0b;
+              font-size: 10px;
+              width: 17px;
+              height: 17px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 1.5px solid #09090b;
+              box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            ">📦</span>
           </div>
-        `,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17]
-      });
 
-      courierMarkerRef.current = L.marker(coord, { icon, zIndexOffset: 1000 }).addTo(mapRef.current);
+          <!-- Floating Status Badge -->
+          <div style="
+            position: absolute;
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(9, 9, 11, 0.95);
+            border: 1px solid ${activeColor};
+            color: #fafafa;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            z-index: 10;
+            letter-spacing: 0.02em;
+          ">
+            <span class="demo-courier-status-text" style="color: ${activeColor};">
+              Order En Route
+            </span>
+          </div>
+        </div>
+      `,
+      iconSize: [48, 48],
+      iconAnchor: [24, 24]
+    });
+
+    const marker = L.marker(coord, {
+      icon,
+      zIndexOffset: 2000
+    }).addTo(layersRef.current.courierLayer);
+
+    marker.bindPopup(`
+      <div style="font-size: 12px; font-family: var(--font-sans); color: #fafafa; line-height: 1.4;">
+        <strong style="color: ${activeColor}; font-size: 13px;">🛵 Courier #1 Active</strong><br/>
+        <span>Source: <strong>${scenario.restaurant.name}</strong></span><br/>
+        <span>Destination: <strong>${scenario.customer.name}</strong></span><br/>
+        <span style="color: #a1a1aa;">Algorithm: Dynamic Ant Colony Optimization (ACO)</span>
+      </div>
+    `);
+
+    courierMarkerRef.current = marker;
+  }, [scenario]);
+
+  // 6. Smooth Real-Time Visual Updates (Marker movement + Traveled street trail)
+  const updateCourierVisuals = useCallback((progress, pts, dData, isDetour) => {
+    if (!mapRef.current) return;
+    const { coord, idx } = getPointAtProgress(pts, dData, progress);
+    const activeColor = isDetour ? '#10b981' : '#38bdf8';
+
+    // A. Move Marker LatLng directly without tearing down DOM
+    if (!courierMarkerRef.current || !layersRef.current.courierLayer || !layersRef.current.courierLayer.hasLayer(courierMarkerRef.current)) {
+      setupCourierMarker(coord, isDetour);
     } else {
       courierMarkerRef.current.setLatLng(coord);
-      const icon = L.divIcon({
-        className: 'demo-courier-marker',
-        html: `
-          <div style="
-            background: #09090b;
-            border: 2.5px solid ${activeColor};
-            color: #ffffff;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 18px ${activeColor};
-            font-size: 17px;
-            transition: border-color 0.3s;
-          ">
-            🛵
-          </div>
-        `,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17]
-      });
-      courierMarkerRef.current.setIcon(icon);
+      const el = courierMarkerRef.current.getElement();
+      if (el) {
+        const textEl = el.querySelector('.demo-courier-status-text');
+        if (textEl) {
+          if (progress >= 0.999) {
+            textEl.innerHTML = '🎉 Order Delivered!';
+            textEl.style.color = '#10b981';
+          } else {
+            textEl.innerHTML = `Order En Route (${Math.round(progress * 100)}%)`;
+            textEl.style.color = activeColor;
+          }
+        }
+      }
     }
-  }, [currentCourierCoord, roadblockActive]);
 
-  // 7. 60 FPS Animation Loop
+    // B. Live Traveled Trail along actual road curvature
+    if (layersRef.current.traveledTrail) {
+      layersRef.current.traveledTrail.clearLayers();
+      const traveledPts = pts.slice(0, idx + 1).concat([coord]);
+      if (traveledPts.length >= 2) {
+        // Glowing ambient underlay
+        L.polyline(traveledPts, {
+          color: activeColor,
+          weight: 11,
+          opacity: 0.35,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(layersRef.current.traveledTrail);
+
+        // Core bright solid polyline
+        L.polyline(traveledPts, {
+          color: activeColor,
+          weight: 5.5,
+          opacity: 1.0,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(layersRef.current.traveledTrail);
+      }
+    }
+  }, [setupCourierMarker]);
+
+  // Re-synchronize marker on scenario change or roadblock toggle
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const { coord } = getPointAtProgress(activePoints, distData, courierProgress);
+    setupCourierMarker(coord, roadblockActive);
+    updateCourierVisuals(courierProgress, activePoints, distData, roadblockActive);
+  }, [selectedScenarioKey, roadblockActive, setupCourierMarker, updateCourierVisuals, activePoints, distData, courierProgress]);
+
+  // 7. 60 FPS RequestAnimationFrame Animation Loop
   useEffect(() => {
     let lastTime = performance.now();
 
@@ -498,8 +658,8 @@ export default function DemoMap() {
       lastTime = currentTime;
 
       if (isPlayingRef.current) {
-        // Base travel duration: ~22 seconds full route at 1x
-        const step = (dt / 22) * speedRef.current;
+        // Base travel duration: ~16 seconds full route at 1x
+        const step = (dt / 16) * speedRef.current;
         let next = progressRef.current + step;
         if (next >= 1.0) {
           next = 1.0;
@@ -507,6 +667,11 @@ export default function DemoMap() {
           isPlayingRef.current = false;
         }
         progressRef.current = next;
+
+        // Directly update Leaflet marker and glowing road trail on each frame
+        updateCourierVisuals(next, activePointsRef.current, distDataRef.current, roadblockActiveRef.current);
+
+        // Update React state for HUD
         setCourierProgress(next);
       }
 
@@ -518,12 +683,13 @@ export default function DemoMap() {
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, []);
+  }, [updateCourierVisuals]);
 
   const handleTogglePlay = () => {
-    if (courierProgress >= 1.0) {
-      setCourierProgress(0);
+    if (progressRef.current >= 0.999) {
       progressRef.current = 0;
+      setCourierProgress(0);
+      updateCourierVisuals(0, activePointsRef.current, distDataRef.current, roadblockActiveRef.current);
     }
     setIsPlaying(prev => !prev);
   };
@@ -531,17 +697,17 @@ export default function DemoMap() {
   const handleReset = () => {
     setIsPlaying(false);
     isPlayingRef.current = false;
-    setCourierProgress(0);
     progressRef.current = 0;
+    setCourierProgress(0);
+    updateCourierVisuals(0, activePointsRef.current, distDataRef.current, roadblockActiveRef.current);
   };
 
   const handleToggleRoadblock = () => {
     setRoadblockActive(prev => {
       const next = !prev;
-      // Keep courier moving or reset progress
-      if (courierProgress > 0.8) {
-        setCourierProgress(0);
+      if (progressRef.current > 0.8) {
         progressRef.current = 0;
+        setCourierProgress(0);
       }
       return next;
     });
@@ -660,7 +826,7 @@ export default function DemoMap() {
             ) : (
               <>
                 <Play size={14} fill="currentColor" />
-                <span>{courierProgress >= 1.0 ? 'Replay' : 'Drive'}</span>
+                <span>{courierProgress >= 0.999 ? 'Replay' : 'Drive'}</span>
               </>
             )}
           </button>
@@ -761,7 +927,7 @@ export default function DemoMap() {
                 <span>BLOCKED: {scenario.roadblock.location_name}</span>
               </div>
               <div style={{ color: '#e4e4e7', fontSize: '0.74rem', lineHeight: 1.35 }}>
-                {scenario.roadblock.title}. Pheromone cost set to &infin;. 
+                {scenario.roadblock.title}. Pheromone cost set to &infin;.
               </div>
               <div style={{ color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Zap size={13} />
